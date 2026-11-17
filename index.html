@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResolveJá · Central de Atendimento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M4 15 16 5l12 10v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z' fill='%230f4c45'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Tema claro único. Layout: cabeçalho com a troca de visão (Cliente, Central, Gerente), abas da visão e conteúdo em cartões. */
+:root{
+  --bg:#f3f5f4; --surface:#fff; --surface-2:#f8faf9; --ink:#13201e; --muted:#5a6a67; --line:#dce3e1;
+  --brand:#0f4c45; --brand-soft:#e4efec; --on-brand:#fff;
+  --accent:#f2b705; --accent-soft:#fdf3cf; --on-accent:#2d2200;
+  --ok:#1d7f46; --ok-bg:#e1f3e8; --info:#245e9f; --info-bg:#e4edf9; --pay:#0e6f67; --pay-bg:#dcf1ee;
+  --bad:#b42318; --bad-bg:#fbe8e6; --warn:#8f5200; --warn-bg:#fcefd8;
+  --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+  --r:12px; color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(1.9rem,4vw,2.8rem);font-weight:800}
+h2{font-size:1.45rem;font-weight:800}
+h3{font-size:1.05rem;font-weight:600}
+p{margin:0}
+a{color:var(--brand)}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.muted{color:var(--muted)} .small{font-size:.875rem}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:10px;padding:10px 16px;font:600 .95rem var(--body);cursor:pointer;text-decoration:none;white-space:nowrap}
+.btn:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--brand);color:var(--on-brand)}
+.btn.accent{background:var(--accent);color:var(--on-accent)}
+.btn.ghost{background:var(--surface);border-color:var(--line);color:var(--ink)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.danger{background:var(--surface);border-color:var(--bad);color:var(--bad)}
+.btn.wa{background:#1f9d55;color:#fff}
+.btn.sm{padding:6px 11px;font-size:.84rem}
+.btn.lg{padding:13px 22px;font-size:1.02rem}
+label.f{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:.88rem}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 11px;width:100%}
+textarea{min-height:90px;resize:vertical}
+input[type=checkbox]{width:auto}
+.hint{font-weight:400;color:var(--muted);font-size:.8rem}
+.fgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fgrid .full{grid-column:1/-1}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:.78rem;font-weight:700;white-space:nowrap}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.st-agendado,.st-aguardando,.st-retorno{background:var(--info-bg);color:var(--info)}
+.st-pago,.st-em_atendimento{background:var(--pay-bg);color:var(--pay)}
+.st-concluido,.st-convertida,.st-pedido{background:var(--ok-bg);color:var(--ok)}
+.st-cancelado,.st-encerrada,.st-sem_pedido{background:var(--bad-bg);color:var(--bad)}
+.tag{display:inline-block;border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.f-entrada{background:var(--info-bg);color:var(--info)}
+.f-processamento{background:var(--accent-soft);color:var(--warn)}
+.f-saida{background:var(--ok-bg);color:var(--ok)}
+.notice{border-radius:10px;padding:11px 14px;font-size:.9rem}
+.notice.warn{background:var(--warn-bg);color:var(--warn)}
+.notice.info{background:var(--info-bg);color:var(--info)}
+.notice.bad{background:var(--bad-bg);color:var(--bad)}
+.notice.ok{background:var(--ok-bg);color:var(--ok)}
+
+/* Cabeçalho */
+.top{background:var(--surface);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
+.top-in{display:flex;align-items:center;gap:16px;min-height:62px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font:800 1.25rem var(--display)}
+.logo b{color:var(--brand)}
+.visao{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:3px;margin-left:auto}
+.visao a{padding:7px 14px;border-radius:999px;text-decoration:none;color:var(--muted);font-weight:700;font-size:.9rem}
+.visao a.on{background:var(--brand);color:var(--on-brand)}
+.subnav{background:var(--surface);border-bottom:1px solid var(--line)}
+.subnav .wrap{display:flex;gap:4px;overflow-x:auto}
+.subnav a{padding:11px 14px;text-decoration:none;color:var(--muted);font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+.subnav a.on{color:var(--ink);border-bottom-color:var(--accent)}
+.badge{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--bad);color:#fff;font-size:.72rem;font-weight:800;margin-left:6px}
+main.wrap{padding-top:22px;padding-bottom:48px;display:flex;flex-direction:column;gap:20px}
+.pagehead{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.pagehead p{color:var(--muted);max-width:70ch;margin-top:4px}
+.foot{color:var(--muted);font-size:.82rem;border-top:1px solid var(--line);padding:16px 20px 28px;text-align:center}
+
+/* Cliente */
+.cli{display:grid;grid-template-columns:1fr 1.05fr;gap:28px;align-items:start}
+.cli-txt{display:flex;flex-direction:column;gap:14px;padding-top:6px}
+.pill{align-self:flex-start;display:inline-flex;gap:8px;align-items:center;background:var(--brand-soft);color:var(--brand);font-weight:700;font-size:.85rem;padding:6px 12px;border-radius:999px}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+.lead{font-size:1.08rem;color:var(--muted);max-width:46ch}
+.passos{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.passos li{display:flex;gap:12px;align-items:flex-start}
+.passos .n{flex:none;width:28px;height:28px;border-radius:8px;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font:800 .9rem var(--display)}
+.art{width:100%;max-width:400px;height:auto;display:block;margin-top:6px}
+.protocolo{font:800 2.2rem var(--display);letter-spacing:.04em;color:var(--brand)}
+.track{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.track li{flex:1;min-width:100px;border-top:4px solid var(--line);padding-top:7px;font-size:.84rem;color:var(--muted)}
+.track li.ok{border-color:var(--ok);color:var(--ink);font-weight:600}
+.stars{display:flex;gap:4px}
+.stars button{border:0;background:none;font-size:2rem;line-height:1;cursor:pointer;color:var(--line);padding:0 2px}
+.stars button.on{color:#e0a100}
+.star{color:#d99a00}
+
+/* Central */
+.central{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:18px;align-items:start}
+.fila{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.fila li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface)}
+.fila li.prox{border-color:var(--brand);box-shadow:inset 3px 0 0 var(--brand)}
+.pos{font:800 1.3rem var(--display);color:var(--muted);width:38px;text-align:center}
+.espera{font-weight:700;font-variant-numeric:tabular-nums}
+.espera.alta{color:var(--bad)}
+.canais{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.canal-btn{display:flex;flex-direction:column;align-items:flex-start;gap:4px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:14px;cursor:pointer;font:inherit;color:inherit;text-align:left}
+.canal-btn:hover{border-color:var(--brand)}
+.canal-btn b{font-size:1rem}
+.emcurso{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:12px 16px}
+.at{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+.sec{display:flex;flex-direction:column;gap:12px}
+.sec-t{display:flex;align-items:center;gap:10px}
+.sec-t .n{width:26px;height:26px;border-radius:50%;background:var(--brand);color:var(--on-brand);display:grid;place-items:center;font:800 .85rem var(--display);flex:none}
+.aside{position:sticky;top:76px;display:flex;flex-direction:column;gap:12px}
+.cron{font:800 2.2rem var(--display);font-variant-numeric:tabular-nums;color:var(--brand)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{flex:1;border:0;background:transparent;padding:9px 10px;font:600 .88rem var(--body);color:var(--muted);cursor:pointer;border-right:1px solid var(--line);white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--brand);color:var(--on-brand)}
+table.guia{width:100%;border-collapse:collapse;font-size:.86rem}
+table.guia th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+table.guia td{padding:7px 8px;border-bottom:1px solid var(--line)}
+table.guia tr:hover td{background:var(--surface-2)}
+details.guia-box{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface-2)}
+details.guia-box summary{cursor:pointer;font-weight:700}
+.pro{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface)}
+.pro.sel{border-color:var(--brand);box-shadow:inset 0 0 0 2px var(--brand)}
+.pro .meta{display:flex;gap:12px;flex-wrap:wrap;font-size:.82rem;color:var(--muted)}
+.pay-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pay-opt{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--surface);cursor:pointer;text-align:left;font:inherit;color:inherit;display:flex;flex-direction:column;gap:2px}
+.pay-opt.on{border-color:var(--brand);box-shadow:inset 0 0 0 2px var(--brand)}
+.pay-opt span{font-size:.76rem;color:var(--muted)}
+table.calc{width:100%;border-collapse:collapse;font-size:.92rem}
+table.calc td{padding:7px 0;border-bottom:1px solid var(--line)}
+table.calc td.v{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
+table.calc tr.tot td{border-bottom:0;font-weight:800;font-size:1.1rem;padding-top:10px}
+table.calc tr.neg td.v{color:var(--ok)}
+.anexos{display:flex;flex-wrap:wrap;gap:8px}
+.ax{position:relative;width:84px;height:84px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);overflow:hidden;display:grid;place-items:center;cursor:pointer;padding:0}
+.ax img{width:100%;height:100%;object-fit:cover}
+.ax .pdf{font:800 .8rem var(--body);color:var(--bad)}
+.ax small{position:absolute;bottom:0;left:0;right:0;background:rgba(19,32,30,.65);color:#fff;font-size:.62rem;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.addax{width:84px;height:84px;border:1px dashed var(--muted);border-radius:10px;display:grid;place-items:center;text-align:center;font-size:.75rem;color:var(--muted);cursor:pointer;padding:4px}
+.addax input{display:none}
+.erros{margin:0;padding-left:18px;color:var(--bad);font-size:.86rem}
+
+/* Tabelas e detalhe */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table.tbl{width:100%;border-collapse:collapse;font-size:.9rem;min-width:720px}
+table.tbl th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:11px 12px;border-bottom:1px solid var(--line);background:var(--surface-2);white-space:nowrap}
+table.tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+table.tbl tr:last-child td{border-bottom:0}
+table.tbl tr.click{cursor:pointer}
+table.tbl tr.click:hover td{background:var(--surface-2)}
+table.tbl .r{text-align:right;font-variant-numeric:tabular-nums}
+table.tbl .nw{white-space:nowrap}
+.filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filtros label{min-width:170px}
+.det{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.det .k{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700}
+.det .v{font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:.88rem}
+.timeline li:last-child{border-bottom:0}
+.timeline time{color:var(--muted);font-size:.78rem;font-variant-numeric:tabular-nums}
+.legenda{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.doc{border:1px dashed var(--muted);border-radius:12px;padding:16px;background:var(--surface-2)}
+.aviso-box{display:flex;flex-direction:column;gap:10px;border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface-2)}
+.aviso-box pre{white-space:pre-wrap;font:inherit;font-size:.86rem;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px}
+
+.avatar{border-radius:50%;flex:none;display:block}
+.perfil-top{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.prof-mini{display:flex;gap:12px;align-items:center}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-weight:700;color:var(--brand);cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-align:left}
+.rev{border-top:1px solid var(--line);padding:10px 0;display:flex;flex-direction:column;gap:4px}
+.lista-simples{margin:6px 0 0;padding-left:18px;font-size:.88rem;display:flex;flex-direction:column;gap:6px}
+.meu-prof{display:flex;gap:14px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface-2)}
+.dias{display:flex;gap:6px;flex-wrap:wrap}
+.dia{display:flex;flex-direction:column;align-items:center;gap:0;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:7px 12px;cursor:pointer;font:inherit;color:inherit;min-width:68px}
+.dia b{font-size:.86rem}.dia span{font-size:.76rem;color:var(--muted)}
+.dia.on{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}.dia.on span{color:var(--on-brand)}
+.dia:disabled{opacity:.4;cursor:not-allowed}
+.ordem{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:12px;padding:16px}
+.cads{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.checklist{display:flex;flex-direction:column;gap:6px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px}
+@media (max-width:960px){.cads{grid-template-columns:1fr}}
+[hidden]{display:none!important}
+/* Gerente */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.kpi>span{font-size:.8rem;color:var(--muted);font-weight:600}
+.kpi b{display:block;font:800 1.5rem var(--display);margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi em{display:block;font-style:normal;font-size:.76rem;color:var(--muted);margin-top:2px}
+.kpi.hl{border-left:4px solid var(--accent)}
+.bars{display:flex;flex-direction:column;gap:9px}
+.bar-row{display:grid;grid-template-columns:140px 1fr 80px;gap:10px;align-items:center;font-size:.86rem}
+.bar-track{height:14px;background:var(--surface-2);border-radius:4px;overflow:hidden;border:1px solid var(--line)}
+.bar-fill{height:100%;border-radius:3px}
+.bar-row .v{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.colunas{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;align-items:end;height:150px;padding-top:8px}
+.coluna{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;font-size:.72rem;color:var(--muted)}
+.coluna .c{width:100%;background:var(--brand);border-radius:4px 4px 0 0;min-height:2px}
+.coluna b{color:var(--ink);font-size:.75rem}
+.spt{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:10px;align-items:stretch}
+.spt .col{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:14px;border-top:5px solid var(--c)}
+.spt .col ul{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:.86rem}
+.spt .arrow{display:grid;place-items:center;color:var(--muted);font-size:1.3rem}
+.alertas{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.alertas li{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px;border-radius:10px;border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--surface)}
+.alertas li.alta{border-left-color:var(--bad)}
+.toggle{border:0;border-radius:999px;padding:4px 12px;font:700 .8rem var(--body);cursor:pointer}
+.toggle.on{background:var(--ok-bg);color:var(--ok)}
+.toggle.off{background:var(--bad-bg);color:var(--bad)}
+
+/* Modal e aviso */
+.modal-bg{position:fixed;inset:0;background:rgba(5,15,13,.5);display:grid;place-items:center;z-index:50;padding:16px}
+.modal{background:var(--surface);border-radius:14px;padding:20px;max-width:560px;width:100%;max-height:90vh;overflow:auto;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
+.modal.wide{max-width:860px}
+.modal img.full{max-width:100%;border-radius:8px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:60;padding:12px 18px;border-radius:10px;font-weight:600;box-shadow:0 10px 30px -10px rgba(0,0,0,.4);max-width:90vw}
+.spin{width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+
+@media (max-width:960px){
+  .cli,.central,.at,.two{grid-template-columns:1fr}
+  .aside{position:static}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .det{grid-template-columns:1fr 1fr}
+  .pay-opts{grid-template-columns:repeat(2,1fr)}
+  .spt{grid-template-columns:1fr}.spt .arrow{transform:rotate(90deg)}
+  .art{display:none}
+}
+@media (max-width:560px){
+  .fgrid,.det,.canais{grid-template-columns:1fr}
+  .visao{margin-left:0;width:100%}.visao a{flex:1;text-align:center;padding:7px 6px}
+  .bar-row{grid-template-columns:96px 1fr 64px}
+  .timeline li{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="layer"></div>
+<input type="file" id="importar" accept="application/json,.json" class="sr" aria-hidden="true" tabindex="-1">
+<script>
+"use strict";
+/* =========================================================
+   ResolveJá · Central de Atendimento (versão para GitHub Pages)
+   Os dados ficam no navegador: localStorage (dados) + IndexedDB (anexos).
+   Toda gravação passa por salvar() e pelo objeto ANEXOS: para usar um banco
+   online no futuro, basta trocar essas duas peças.
+   ========================================================= */
+
+/* ---------- Constantes ---------- */
+const ESPEC={encanador:"Encanador",eletricista:"Eletricista",montador:"Montador de móveis",tecnico:"Técnico de manutenção",pintor:"Pintor"};
+const BAIRROS={"Centro":["Boa Vista","Derby","Santo Amaro","Santo Antônio","São José","Soledade"],"Zona Norte":["Aflitos","Casa Amarela","Casa Forte","Espinheiro","Graças","Parnamirim","Tamarineira"],"Zona Oeste":["Afogados","Cordeiro","Iputinga","Madalena","Torre","Várzea"],"Zona Sul":["Boa Viagem","Ibura","Imbiribeira","Ipsep","Pina"]};
+const REGIOES=Object.keys(BAIRROS);
+const regiaoDe=b=>REGIOES.find(r=>BAIRROS[r].includes(b))||"";
+const URG={baixa:"Baixa",media:"Média",alta:"Alta"};
+const PAG={pix:"Pix",credito:"Cartão de crédito",debito:"Cartão de débito",dinheiro:"Dinheiro"};
+const STATUS={agendado:"Agendado",pago:"Pago",concluido:"Concluído",cancelado:"Cancelado"};
+const PAGST={pago:"Pago",pendente:"A receber na conclusão",estornado:"Estornado (simulação)",nao_cobrado:"Não cobrado"};
+const FASE={entrada:"Entrada",processamento:"Processamento",saida:"Saída"};
+const FASE_EXP={entrada:"dados recebidos",processamento:"ações do sistema",saida:"respostas ao cliente"};
+const CANAL={ligacao:"Ligação",whatsapp:"WhatsApp",formulario:"Formulário"};
+const RESULT={pedido:"Virou pedido",sem_pedido:"Sem pedido",retorno:"Voltou para a fila"};
+const FILAST={aguardando:"Aguardando",em_atendimento:"Em atendimento",convertida:"Virou pedido",encerrada:"Encerrada"};
+const PREF={qualquer:"Qualquer horário",manha:"Manhã (8h às 12h)",tarde:"Tarde (13h às 18h)",urgente:"O quanto antes"};
+const MOTIVOS=["Só queria tirar dúvida ou orçamento","Cliente desistiu","Nenhum profissional disponível no horário","Fora da área de atendimento","Cliente não atendeu (voltar para a fila)"];
+const HORARIOS=["08:00","09:00","10:00","11:00","13:00","14:00","15:00","16:00","17:00","18:00"];
+const FIM_EXPEDIENTE=20*60;
+const GUIA=[
+  ["Torneira, registro ou cano vazando sem parar","encanador","alta",1],
+  ["Pia, ralo ou vaso entupido","encanador","media",1],
+  ["Disjuntor desarmando, faísca ou cheiro de queimado","eletricista","alta",1.5],
+  ["Instalar chuveiro, tomada ou luminária","eletricista","baixa",1],
+  ["Montar guarda-roupa ou cozinha","montador","baixa",3],
+  ["Fixar prateleiras ou painel de TV","montador","baixa",2],
+  ["Geladeira ou máquina de lavar parou","tecnico","media",2],
+  ["Ar-condicionado pingando ou sem gelar","tecnico","media",2],
+  ["Portão eletrônico ou interfone com defeito","tecnico","media",1.5],
+  ["Pintar um cômodo","pintor","baixa",6],
+  ["Mofo ou infiltração na parede (tratar e pintar)","pintor","media",4]
+];
+
+/* ---------- Utilidades ---------- */
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const r2=v=>Math.round((v+Number.EPSILON)*100)/100;
+const brl=v=>(Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const pad=n=>String(n).padStart(2,"0");
+const isoDia=(d=new Date())=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hojeISO=()=>isoDia();
+const somaDias=(n,base=new Date())=>{const d=new Date(base);d.setDate(d.getDate()+n);return isoDia(d)};
+const fmtData=d=>{if(!d)return"—";const[y,m,dd]=d.split("-");return`${dd}/${m}/${y}`};
+const fmtDH=iso=>{if(!iso)return"—";const d=new Date(iso);return d.toLocaleDateString("pt-BR")+" "+d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})};
+const fmtHora=iso=>new Date(iso).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+const digitos=s=>String(s||"").replace(/\D/g,"");
+const fmtTel=s=>{const d=digitos(s);if(d.length===11)return`(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;if(d.length===10)return`(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;return s||""};
+const fmtDur=seg=>{seg=Math.max(0,Math.round(seg||0));if(seg<60)return seg+" s";if(seg<3600){const m=Math.floor(seg/60),r=seg%60;return m+" min"+(r?" "+r+" s":"")}const h=Math.floor(seg/3600),m=Math.round((seg%3600)/60);return h+" h"+(m?" "+m+" min":"")};
+const relogio=seg=>{seg=Math.max(0,Math.floor(seg));const h=Math.floor(seg/3600),m=Math.floor(seg%3600/60),s=seg%60;return(h?h+":":"")+pad(m)+":"+pad(s)};
+const fmtH=h=>String(h).replace(".",",")+" h";
+const minDe=h=>{const[a,b]=h.split(":").map(Number);return a*60+b};
+const hmDe=m=>pad(Math.floor(m/60))+":"+pad(m%60);
+const local=(b,r)=>b?`${b} · ${r||regiaoDe(b)}`:(r||"");
+const media=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+const agoraISO=()=>new Date().toISOString();
+function horaPassou(data,horario){if(data!==hojeISO())return data<hojeISO();const n=new Date();return minDe(horario)<=n.getHours()*60+n.getMinutes()}
+const chip=(st,map=STATUS)=>`<span class="chip st-${esc(st)}">${esc(map[st]||st)}</span>`;
+const estrelas=n=>`<span class="star" aria-label="${n} de 5 estrelas">${"★".repeat(Math.round(n))}${"☆".repeat(5-Math.round(n))}</span>`;
+const ICONS={encanador:'<path d="M4 10h7a3 3 0 0 1 3 3v7M14 20h4M4 7v6M11 6V4h4v2"/>',eletricista:'<path d="M13 2 5 14h6l-1 8 8-12h-6z"/>',montador:'<rect x="4" y="5" width="16" height="15" rx="1"/><path d="M12 5v15"/>',tecnico:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.2L4 16.8 7.2 20l5.3-5.3a4 4 0 0 0 5.2-5.4l-2.4 2.4-2.6-.6-.6-2.6z"/>',pintor:'<rect x="4" y="3" width="13" height="6" rx="1"/><path d="M17 6h3v5h-8v3M12 14v7"/>'};
+const LOGO='<svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 15 16 5l12 10v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" fill="#0f4c45"/><path d="m10 19 4.5 4.5L23 15" fill="none" stroke="#f2b705" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+/* ---------- Regras de preço ---------- */
+function calcular(prof,horas,urgencia,pagamento){
+  const servicoBase=r2(prof.precoBase+prof.precoHora*horas);
+  const adicionalUrgencia=urgencia==="alta"?r2(servicoBase*0.20):0;
+  const subtotal=r2(servicoBase+adicionalUrgencia);
+  const taxaPlataforma=r2(subtotal*0.10);
+  const bruto=r2(subtotal+taxaPlataforma);
+  const descontoPix=pagamento==="pix"?r2(bruto*0.05):0;
+  const total=r2(bruto-descontoPix);
+  return{precoBase:prof.precoBase,precoHora:prof.precoHora,horas,servicoBase,adicionalUrgencia,subtotal,taxaPlataforma,bruto,descontoPix,total};
+}
+
+/* ---------- Armazenamento ---------- */
+const CHAVE="resolveja-central-v1";
+let D=null;
+const S={route:{v:"cliente"},modal:null,toast:null,semArmazenamento:false,cliente:{ultimo:null,consulta:{codigo:"",telefone:""},resultado:null,nota:0,comentario:""},pedidos:{q:"",status:""},cham:{periodo:"7d"},thumbs:{}};
+function salvar(){try{localStorage.setItem(CHAVE,JSON.stringify(D))}catch(e){if(S.semArmazenamento)return;S.semArmazenamento=true;toast("Não foi possível salvar neste navegador. Os dados valem só enquanto a página estiver aberta.","bad")}}
+function carregar(){
+  let txt=null;
+  try{txt=localStorage.getItem(CHAVE)}catch(e){S.semArmazenamento=true}
+  if(txt){try{D=JSON.parse(txt);if(D&&D.versao===1){migrar();return}}catch(e){}}
+  D=gerarExemplo();salvar();
+}
+function migrar(){
+  if(!D.candidaturas){D.candidaturas=seedCandidaturas();D.seq.cand=3}
+  D.profs.forEach((p,i)=>{if(!p.telefone)p.telefone="8199700"+String(i+1).padStart(4,"0")});
+  D.transacoes.forEach(t=>{if(!t.ordem&&t.seed)t.ordem={enviadaEm:t.criadoEm,meio:"WhatsApp",confirmadaEm:t.criadoEm}});
+}
+const ANEXOS={
+  db:null,mem:{},
+  abrir(){return new Promise(res=>{try{const r=indexedDB.open("resolveja-anexos",1);r.onupgradeneeded=()=>r.result.createObjectStore("a");r.onsuccess=()=>{this.db=r.result;res()};r.onerror=()=>res()}catch(e){res()}})},
+  put(id,v){this.mem[id]=v;if(!this.db)return Promise.resolve();return new Promise(res=>{try{const t=this.db.transaction("a","readwrite");t.objectStore("a").put(v,id);t.oncomplete=()=>res();t.onerror=()=>res()}catch(e){res()}})},
+  get(id){if(this.mem[id])return Promise.resolve(this.mem[id]);if(!this.db)return Promise.resolve(null);return new Promise(res=>{try{const r=this.db.transaction("a").objectStore("a").get(id);r.onsuccess=()=>{if(r.result)this.mem[id]=r.result;res(r.result||null)};r.onerror=()=>res(null)}catch(e){res(null)}})},
+  limpar(){this.mem={};if(!this.db)return Promise.resolve();return new Promise(res=>{try{const t=this.db.transaction("a","readwrite");t.objectStore("a").clear();t.oncomplete=()=>res();t.onerror=()=>res()}catch(e){res()}})}
+};
+
+/* ---------- Dados de exemplo (datas calculadas a partir de hoje) ---------- */
+function gerarExemplo(){
+  const agora=new Date();
+  const P=[["p01","Carlos Mendes","encanador","Boa Vista",70,55,4.8,126,15,"Especialista em vazamentos e troca de torneiras e registros.",true],["p02","Roberta Lima","encanador","Casa Amarela",65,50,4.7,88,9,"Resolve entupimentos e instala aquecedores.",true],["p03","José Ferreira","encanador","Imbiribeira",60,45,4.5,54,20,"Encanamento antigo e caixas d'água.",true],["p04","Antônio Barros","encanador","Cordeiro",75,58,4.9,41,12,"Atende urgências de vazamento e infiltração.",true],["p05","Fábio Nunes","encanador","Santo Amaro",62,48,4.4,23,4,"Instalação de pias, sifões e chuveiros.",false],
+  ["p06","Marcos Silva","eletricista","Derby",80,65,4.8,112,14,"Quadros de disjuntores, tomadas e fiação.",true],["p07","Patrícia Souza","eletricista","Boa Viagem",75,60,4.9,67,10,"Chuveiros, luminárias e ventiladores de teto.",true],["p08","Ricardo Alves","eletricista","Tamarineira",70,55,4.6,49,7,"Curtos-circuitos e quedas de energia.",true],["p09","Luciano Teixeira","eletricista","Torre",85,68,4.7,35,18,"Eletricista predial com NR-10.",true],["p10","Daniel Rocha","eletricista","Ipsep",72,58,4.3,18,3,"Tomadas, interruptores e lâmpadas.",true],
+  ["p11","Eduardo Pires","montador","Espinheiro",55,45,4.8,140,11,"Guarda-roupas, cozinhas e home offices.",true],["p12","Juliana Castro","montador","São José",50,42,4.9,76,6,"Montagem caprichada e fixação segura.",true],["p13","Thiago Moura","montador","Várzea",52,40,4.5,39,5,"Móveis de loja e planejados.",true],["p14","Sérgio Lopes","montador","Pina",58,46,4.6,61,13,"Camas, berços e estantes.",true],["p15","Renan Duarte","montador","Soledade",50,40,4.4,15,2,"Prateleiras, nichos e painéis de TV.",false],
+  ["p16","Paulo Henrique","tecnico","Boa Vista",90,70,4.7,95,16,"Geladeiras, máquinas de lavar e fogões.",true],["p17","Aline Rezende","tecnico","Madalena",95,72,4.8,58,9,"Manutenção de ar-condicionado split.",true],["p18","Gustavo Farias","tecnico","Casa Forte",85,65,4.5,44,8,"Portões eletrônicos, interfones e fechaduras.",true],["p19","Wellington Cruz","tecnico","Ibura",88,68,4.6,31,11,"Pequenos reparos e manutenção preventiva.",true],["p20","Bruno Cavalcanti","tecnico","Iputinga",80,62,4.4,20,4,"Micro-ondas e eletroportáteis.",true],
+  ["p21","Francisco Araújo","pintor","Boa Viagem",110,40,4.8,83,19,"Pintura residencial com acabamento fino.",true],["p22","Mariana Queiroz","pintor","Graças",100,38,4.9,47,8,"Tratamento de mofo, massa corrida e textura.",true],["p23","Edson Matos","pintor","Santo Antônio",95,35,4.5,36,12,"Apartamentos, fachadas e grades.",true],["p24","Vanessa Brito","pintor","Afogados",105,42,4.7,29,6,"Pintura decorativa e retoques.",true]];
+  const profs=P.map(([id,nome,especialidade,bairro,precoBase,precoHora,avaliacaoBase,totalBase,experiencia,bio,disponivel],i)=>({id,nome,especialidade,bairro,regiao:regiaoDe(bairro),precoBase,precoHora,avaliacaoBase,totalBase,experiencia,bio,disponivel,telefone:"8199700"+String(i+1).padStart(4,"0")}));
+  const C=[["81988870101","Ana Beatriz Costa","ana.costa@exemplo.com","Rua da Aurora, 325, ap. 802","Boa Vista"],["81988870102","Pedro Henrique Gomes","pedro.gomes@exemplo.com","Estrada do Encanamento, 1180","Casa Forte"],["81988870103","Luana Martins","luana.m@exemplo.com","Av. Conselheiro Aguiar, 2450, ap. 1203","Boa Viagem"],["81988870104","Rafael Oliveira","rafael.o@exemplo.com","Rua Real da Torre, 640","Torre"],["81988870105","Camila Santos","camila.s@exemplo.com","Av. Agamenon Magalhães, 1980, bloco B","Derby"],["81988870106","Felipe Araújo","felipe.a@exemplo.com","Rua das Graças, 412","Graças"],["81988870107","Larissa Monteiro","larissa.m@exemplo.com","Rua Herculano Bandeira, 300, ap. 1101","Pina"],["81988870108","Gabriel Vasconcelos","gabriel.v@exemplo.com","Av. Caxangá, 2100","Cordeiro"]];
+  const clientes=C.map(([telefone,nome,email,endereco,bairro])=>({id:telefone,telefone,nome,email,endereco,bairro,regiao:regiaoDe(bairro),seed:true}));
+  const D0={versao:1,criadoEm:agora.toISOString(),profs,clientes,transacoes:[],atendimentos:[],fila:[],anexos:[],seq:{fila:0,at:0},atendimentoAberto:null};
+  D0Atual=D0;
+  let x=11;const rnd=()=>{x=(x*16807)%2147483647;return(x-1)/2147483646};
+  const em=(dias,hora,min=0)=>{const d=new Date(agora);d.setDate(d.getDate()+dias);d.setHours(hora,min,0,0);return d};
+  // [código, cliente, profissional, descrição, serviço, urgência, horas, dia do pedido, hora do pedido, dia do serviço, horário, pagamento, situação final, nota, comentário, canal]
+  const L=[["RJ-001011","81988870102","p11","Montar guarda-roupa de 6 portas que chegou desmontado","montador","baixa",3,-38,10,-35,"09:00","credito","concluido",5,"Montou rápido e deixou tudo limpo.","ligacao"],
+  ["RJ-001012","81988870101","p06","O disjuntor desarma quando ligo o chuveiro","eletricista","media",1.5,-33,19,-32,"14:00","pix","concluido",5,"Explicou o problema e resolveu.","whatsapp"],
+  ["RJ-001013","81988870103","p21","Pintar a sala, as paredes estão manchadas","pintor","baixa",6,-30,9,-24,"08:00","debito","concluido",4,"Bom trabalho, atrasou um pouco.","formulario"],
+  ["RJ-001014","81988870104","p17","Ar-condicionado pingando água dentro do quarto","tecnico","media",2,-21,8,-20,"10:00","pix","concluido",5,"","whatsapp"],
+  ["RJ-001015","81988870105","p02","Pia do banheiro entupida, água não desce","encanador","media",1,-18,21,-17,"11:00","dinheiro","cancelado",0,"","ligacao"],
+  ["RJ-001016","81988870106","p08","Tomada da cozinha soltou faísca e parou de funcionar","eletricista","alta",1,-14,7,-14,"09:00","credito","concluido",4,"Chegou no mesmo dia.","ligacao"],
+  ["RJ-001017","81988870107","p14","Montar berço e cômoda do quarto do bebê","montador","baixa",2.5,-12,16,-9,"15:00","pix","concluido",5,"Muito cuidadoso.","formulario"],
+  ["RJ-001018","81988870108","p16","Geladeira parou de gelar","tecnico","alta",2,-8,9,-7,"13:00","debito","cancelado",0,"","whatsapp"],
+  ["RJ-001019","81988870101","p23","Mofo no teto do banheiro, precisa tratar e pintar","pintor","media",4,-6,11,-4,"08:00","dinheiro","concluido",0,"","formulario"],
+  ["RJ-001020","81988870103","p07","Instalar chuveiro elétrico novo","eletricista","baixa",1,-5,18,-3,"16:00","credito","cancelado",0,"","whatsapp"],
+  ["RJ-001024","81988870101","p01","Cheguei em casa e a torneira da cozinha está vazando","encanador","alta",1,-3,17,-3,"18:00","pix","concluido",5,"Resolveu na hora. Recomendo!","ligacao"],
+  ["RJ-001021","81988870102","p01","Vazamento no registro embaixo da pia","encanador","media",1.5,-2,13,2,"10:00","pix","pago",0,"","whatsapp"],
+  ["RJ-001022","81988870105","p12","Fixar duas prateleiras e um painel de TV","montador","baixa",2,-1,9,3,"14:00","dinheiro","agendado",0,"","formulario"],
+  ["RJ-001023","81988870106","p18","Portão eletrônico não abre pelo controle","tecnico","media",1.5,-1,17,4,"09:00","debito","pago",0,"","ligacao"]];
+  for(const[codigo,tel,pid,descricao,servico,urgencia,horas,dPed,hPed,dServ,horario,pagamento,final,nota,comentario,canal]of L){
+    const prof=profs.find(p=>p.id===pid),cli=clientes.find(c=>c.id===tel);
+    const fim=em(dPed,hPed,Math.floor(rnd()*50));const dur=Math.round(150+rnd()*420);const ini=new Date(fim.getTime()-dur*1000);
+    const espera=canal==="formulario"?Math.round(120+rnd()*900):0;
+    const atId="AT-"+String(++D0.seq.at).padStart(4,"0");
+    let filaId=null;
+    if(canal==="formulario"){filaId="F-"+String(++D0.seq.fila).padStart(4,"0");D0.fila.push({id:filaId,criadoEm:new Date(ini.getTime()-espera*1000).toISOString(),nome:cli.nome,telefone:tel,email:cli.email,bairro:cli.bairro,endereco:cli.endereco,descricao,preferencia:"qualquer",anexos:[],status:"convertida",chamadoEm:ini.toISOString(),finalizadoEm:fim.toISOString(),atendimentoId:atId,transacaoId:codigo,tentativas:0,seed:true})}
+    const t=montarTransacao({codigo,cliente:cli,descricao,servico,urgencia,horas,data:somaDias(dServ),horario,prof,pagamento,canal,atendimentoId:atId,filaId,criadoEm:fim.toISOString(),seed:true});
+    {const e1=new Date(fim.getTime()+4*6e4).toISOString(),e2=new Date(fim.getTime()+(15+Math.floor(rnd()*40))*6e4).toISOString();t.ordem={enviadaEm:e1,meio:"WhatsApp",confirmadaEm:e2};t.eventos.push(ev("saida",`Ordem de serviço enviada a ${prof.nome} por WhatsApp.`,e1),ev("entrada",`${prof.nome} confirmou a ordem de serviço.`,e2))}
+    if(final==="concluido"){const q=em(dServ,minDe(horario)/60+horas);q.setMinutes(q.getMinutes()+10);aplicarConclusao(t,q.toISOString());if(nota)aplicarAvaliacao(t,nota,comentario,new Date(q.getTime()+5*36e5).toISOString(),"cliente",prof)}
+    if(final==="cancelado")aplicarCancelamento(t,"cliente",new Date(fim.getTime()+6*36e5).toISOString());
+    D0.transacoes.push(t);
+    D0.atendimentos.push({id:atId,canal,inicio:ini.toISOString(),fim:fim.toISOString(),duracaoSeg:dur,esperaSeg:espera||null,clienteNome:cli.nome,telefone:tel,resultado:"pedido",motivo:"",transacaoId:codigo,filaId,seed:true});
+  }
+  // contatos que não viraram pedido, espalhados pelos últimos 7 dias
+  const extras=[["Maria José","81991230001","whatsapp",0],["Roberto Lins","81991230002","ligacao",1],["Sandra Melo","81991230003","formulario",2],["Joana Pereira","81991230004","whatsapp",0],["Marcelo Dias","81991230005","ligacao",3],["Teresa Nogueira","81991230006","whatsapp",4],["Bruna Ramos","81991230007","ligacao",1],["Cícero Alves","81991230008","formulario",2],["Helena Costa","81991230009","whatsapp",0],["Igor Santana","81991230010","ligacao",3]];
+  extras.forEach(([nome,tel,canal,mot],i)=>{const dia=-(i%7);let h=8+Math.floor(rnd()*11);if(dia===0)h=Math.min(h,Math.max(8,agora.getHours()-1));const fim=em(dia,h,Math.floor(rnd()*55));if(fim>agora)fim.setTime(agora.getTime()-(i+2)*6e5);const dur=Math.round(60+rnd()*300);const atId="AT-"+String(++D0.seq.at).padStart(4,"0");const espera=canal==="formulario"?Math.round(180+rnd()*1200):null;let filaId=null;
+    if(canal==="formulario"){filaId="F-"+String(++D0.seq.fila).padStart(4,"0");D0.fila.push({id:filaId,criadoEm:new Date(fim.getTime()-(dur+espera)*1000).toISOString(),nome,telefone:tel,email:"",bairro:"Boa Viagem",endereco:"",descricao:"Pedido de orçamento",preferencia:"qualquer",anexos:[],status:"encerrada",motivo:MOTIVOS[mot],chamadoEm:new Date(fim.getTime()-dur*1000).toISOString(),finalizadoEm:fim.toISOString(),atendimentoId:atId,tentativas:0,seed:true})}
+    D0.atendimentos.push({id:atId,canal,inicio:new Date(fim.getTime()-dur*1000).toISOString(),fim:fim.toISOString(),duracaoSeg:dur,esperaSeg:espera,clienteNome:nome,telefone:tel,resultado:"sem_pedido",motivo:MOTIVOS[mot],transacaoId:null,filaId,seed:true})});
+  // dois clientes aguardando na fila agora
+  [["Paulo Roberto","81992220001","paulo.r@exemplo.com","Rua do Futuro, 77","Graças","O disjuntor da casa desarma toda vez que ligo o micro-ondas e o chuveiro juntos.","manha",7],["Fernanda Lima","81992220002","","Rua Setúbal, 940","Boa Viagem","Quero montar um guarda-roupa de casal e uma estante que comprei.","tarde",3]].forEach(([nome,telefone,email,endereco,bairro,descricao,preferencia,min])=>{D0.fila.push({id:"F-"+String(++D0.seq.fila).padStart(4,"0"),criadoEm:new Date(agora.getTime()-min*6e4).toISOString(),nome,telefone,email,bairro,endereco,descricao,preferencia,anexos:[],status:"aguardando",tentativas:0,seed:true})});
+  // numera os atendimentos em ordem cronológica
+  D0.atendimentos.sort((a,b)=>a.inicio<b.inicio?-1:1);const novoId={};
+  D0.atendimentos.forEach((a,i)=>{const n="AT-"+String(i+1).padStart(4,"0");novoId[a.id]=n;a.id=n});
+  D0.transacoes.forEach(t=>{t.atendimentoId=novoId[t.atendimentoId]||t.atendimentoId});
+  D0.fila.forEach(f=>{if(f.atendimentoId)f.atendimentoId=novoId[f.atendimentoId]||f.atendimentoId});
+  D0.candidaturas=seedCandidaturas();D0.seq.cand=3;
+  D0Atual=null;
+  return D0;
+}
+
+/* ---------- Transações: criação e mudanças (usadas pelo exemplo e pelo sistema) ---------- */
+let seqEv=0;
+const ev=(fase,texto,base)=>({em:new Date((base?new Date(base).getTime():Date.now())+(seqEv++%1000)).toISOString(),fase,texto});
+function montarTransacao(o){
+  const valores=calcular(o.prof,o.horas,o.urgencia,o.pagamento);const pagoNaHora=o.pagamento!=="dinheiro";const b=o.criadoEm;
+  const ini=minDe(o.horario),fim=ini+Math.round(o.horas*60);
+  const eventos=[
+    ev("entrada",`Contato recebido por ${CANAL[o.canal]}${o.filaId?` (formulário ${o.filaId})`:""}: dados do cliente, endereço e descrição do problema.`,b),
+    ev("entrada",`Triagem do atendente: ${ESPEC[o.servico]}, urgência ${URG[o.urgencia].toLowerCase()}, ${fmtH(o.horas)}.`,b),
+    ev("processamento",`Agenda conferida: ${o.prof.nome} livre em ${fmtData(o.data)} das ${o.horario} às ${hmDe(fim)}.`,b),
+    ev("entrada",`Profissional escolhido: ${o.prof.nome}. Forma de pagamento: ${PAG[o.pagamento]}.`,b),
+    ev("processamento",`Valor calculado: serviço ${brl(valores.servicoBase)}${valores.adicionalUrgencia?` + urgência ${brl(valores.adicionalUrgencia)}`:""} + taxa ${brl(valores.taxaPlataforma)}${valores.descontoPix?` − desconto Pix ${brl(valores.descontoPix)}`:""} = ${brl(valores.total)}.`,b),
+    ev("processamento","Agendamento confirmado e horário reservado.",b),
+    pagoNaHora?ev("processamento",`Pagamento simulado aprovado via ${PAG[o.pagamento]}.`,b):ev("processamento","Pagamento em dinheiro: será registrado na conclusão do serviço.",b),
+    ev("saida",`Pedido ${o.codigo} gerado${pagoNaHora?" com comprovante de pagamento":""}.`,b)
+  ];
+  if(o.anexos&&o.anexos.length)eventos.splice(1,0,ev("entrada",`${o.anexos.length} anexo(s) recebido(s) do cliente.`,b));
+  return{codigo:o.codigo,clienteId:o.cliente.id,clienteNome:o.cliente.nome,telefone:o.cliente.telefone,email:o.cliente.email||"",endereco:o.cliente.endereco,bairro:o.cliente.bairro,regiao:regiaoDe(o.cliente.bairro),
+    descricao:o.descricao,servico:o.servico,urgencia:o.urgencia,horas:o.horas,data:o.data,horario:o.horario,inicioMin:ini,fimMin:fim,profissionalId:o.prof.id,profissionalNome:o.prof.nome,
+    pagamento:o.pagamento,valores,status:pagoNaHora?"pago":"agendado",pagamentoStatus:pagoNaHora?"pago":"pendente",canal:o.canal,atendimentoId:o.atendimentoId,filaId:o.filaId||null,anexos:o.anexos||[],
+    avaliacao:null,avisos:[],eventos:o.seed?eventos:[...eventos,ev("saida",`Ordem de serviço disponibilizada a ${o.prof.nome} na área do profissional.`,b)],ordem:o.seed?null:{enviadaEm:o.criadoEm,meio:"sistema"},criadoEm:o.criadoEm,seed:!!o.seed};
+}
+function aplicarConclusao(t,quando,origem){
+  const e=[ev("entrada",origem==="profissional"?"Profissional informou a conclusão na área do profissional.":"Profissional informou a conclusão; registrada pela central.",quando)];t.conclusaoPor=origem||"central";
+  if(t.pagamento==="dinheiro")e.push(ev("processamento",`Pagamento em dinheiro de ${brl(t.valores.total)} recebido e registrado.`,quando));
+  e.push(ev("processamento","Situação atualizada para concluído; relatórios atualizados.",quando),ev("saida","Recibo emitido.",quando));
+  t.eventos.push(...e);t.status="concluido";t.pagamentoStatus="pago";t.concluidoEm=quando;
+}
+function aplicarCancelamento(t,por,quando){
+  const pago=t.pagamentoStatus==="pago";
+  t.eventos.push(ev("entrada",`Cancelamento solicitado pelo ${por}.`,quando),ev("processamento",`Horário de ${t.profissionalNome} em ${fmtData(t.data)} às ${t.horario} liberado na agenda.`,quando));
+  if(pago)t.eventos.push(ev("processamento",`Estorno simulado de ${brl(t.valores.total)} via ${PAG[t.pagamento]}.`,quando));
+  t.eventos.push(ev("saida","Comprovante de cancelamento emitido.",quando));
+  t.status="cancelado";t.pagamentoStatus=pago?"estornado":"nao_cobrado";t.canceladoEm=quando;
+}
+function aplicarAvaliacao(t,nota,comentario,quando,via,prof){
+  t.avaliacao={nota,comentario:(comentario||"").slice(0,400),em:quando,via};
+  t.eventos.push(ev("entrada",`Avaliação recebida ${via==="cliente"?"do cliente":"pela central"}: ${nota} estrela${nota>1?"s":""}.`,quando));
+  if(prof){const n=notaProf(prof,D0Atual||D);t.eventos.push(ev("processamento",`Nota de ${prof.nome} recalculada: ${n.media.toFixed(2).replace(".",",")} (${n.total} avaliações).`,quando))}
+  t.eventos.push(ev("saida","Avaliação publicada no perfil do profissional.",quando));
+}
+let D0Atual=null;
+function notaProf(p,base){
+  const lista=(base||D).transacoes.filter(t=>t.profissionalId===p.id&&t.avaliacao&&!t.seed).map(t=>t.avaliacao.nota);
+  const total=p.totalBase+lista.length;
+  return{media:total?r2((p.avaliacaoBase*p.totalBase+lista.reduce((a,b)=>a+b,0))/total):0,total};
+}
+
+/* ---------- Consultas ---------- */
+const ativa=t=>t.status==="agendado"||t.status==="pago";
+const filaAguardando=()=>D.fila.filter(f=>f.status==="aguardando").sort((a,b)=>a.criadoEm<b.criadoEm?-1:1);
+function sobrepoe(profId,data,ini,fim){return D.transacoes.some(t=>ativa(t)&&t.profissionalId===profId&&t.data===data&&t.inicioMin<fim&&ini<t.fimMin)}
+function tempoMedioAtend(){const l=D.atendimentos.filter(a=>a.duracaoSeg).slice(-30).map(a=>a.duracaoSeg);return l.length?media(l):360}
+function proximoCodigo(){let c;do{c="RJ-"+String(Math.floor(100000+Math.random()*900000))}while(D.transacoes.some(t=>t.codigo===c));return c}
+function clienteUpsert(c){const id=digitos(c.telefone);let x=D.clientes.find(k=>k.id===id);const dados={nome:c.nome.trim(),telefone:id,email:(c.email||"").trim(),endereco:c.endereco.trim(),bairro:c.bairro,regiao:regiaoDe(c.bairro)};
+  if(x){Object.assign(x,dados);return{cli:x,novo:false}}x={id,...dados,seed:false};D.clientes.push(x);return{cli:x,novo:true}}
+
+/* ---------- Anexos ---------- */
+function lerComoDataURL(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
+async function reduzirImagem(file){
+  const url=URL.createObjectURL(file);const img=new Image();
+  await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+  const k=Math.min(1,1280/Math.max(img.width,img.height));const c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);
+  c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);
+  return{dataURL:c.toDataURL("image/jpeg",0.75),tipo:"image/jpeg",nome:file.name.replace(/\.[^.]+$/,"")+".jpg"};
+}
+async function guardarArquivos(files,ref){
+  const ids=[];
+  for(const f of files){
+    let a;
+    if(f.type.startsWith("image/")){try{a=await reduzirImagem(f)}catch(e){throw new Error(`Não foi possível ler a imagem ${f.name}.`)}}
+    else if(f.type==="application/pdf"){if(f.size>2e6)throw new Error(`${f.name} passa de 2 MB. Envie um PDF menor.`);a={dataURL:await lerComoDataURL(f),tipo:f.type,nome:f.name}}
+    else throw new Error(`${f.name}: envie foto (JPG, PNG) ou PDF.`);
+    const id="AX-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+    await ANEXOS.put(id,a.dataURL);
+    D.anexos.push({id,nome:a.nome,tipo:a.tipo,tam:Math.round(a.dataURL.length*0.75),ref,criadoEm:agoraISO()});ids.push(id);
+  }
+  salvar();return ids;
+}
+function htmlAnexos(ids,addAcao,addId){
+  const lista=(ids||[]).map(id=>D.anexos.find(a=>a.id===id)).filter(Boolean);
+  return`<div class="anexos">${lista.map(a=>`<button type="button" class="ax" data-action="verAnexo" data-id="${esc(a.id)}" title="${esc(a.nome)}">${a.tipo==="application/pdf"?`<span class="pdf">PDF</span>`:`<img data-ax="${esc(a.id)}" alt="${esc(a.nome)}">`}<small>${esc(a.nome)}</small></button>`).join("")}
+    ${addAcao?`<label class="addax">+ Foto ou PDF<input type="file" accept="image/*,application/pdf" multiple data-upload="${addAcao}" data-id="${esc(addId||"")}"></label>`:""}</div>
+    ${!lista.length&&!addAcao?`<p class="muted small">Nenhum anexo.</p>`:""}`;
+}
+async function hidratarAnexos(){
+  for(const img of document.querySelectorAll("img[data-ax]:not([src])")){const v=await ANEXOS.get(img.dataset.ax);if(v)img.src=v;else img.replaceWith(Object.assign(document.createElement("span"),{className:"pdf",textContent:"?"}))}
+}
+
+/* ---------- Mensagens prontas ao cliente ---------- */
+function linkSistema(){return location.href.split("#")[0]}
+function mensagem(tipo,t){
+  const v=t.valores;
+  if(tipo==="confirmacao")return{assunto:`ResolveJá · Pedido ${t.codigo} confirmado`,texto:`Olá, ${t.clienteNome.split(" ")[0]}! Seu pedido ${t.codigo} na ResolveJá está confirmado.\n\nServiço: ${ESPEC[t.servico]} (${URG[t.urgencia].toLowerCase()} urgência)\nProfissional: ${t.profissionalNome}\nData: ${fmtData(t.data)} às ${t.horario}\nEndereço: ${t.endereco}, ${t.bairro}\nValor: ${brl(v.total)} · ${PAG[t.pagamento]}${t.pagamento==="dinheiro"?" (pago na conclusão)":" (pagamento simulado aprovado)"}\n\nPara acompanhar, acesse ${linkSistema()}#cliente-consulta com o código ${t.codigo} e seu telefone.`};
+  if(tipo==="conclusao")return{assunto:`ResolveJá · Serviço ${t.codigo} concluído`,texto:`Olá, ${t.clienteNome.split(" ")[0]}! O serviço ${t.codigo} (${ESPEC[t.servico]} com ${t.profissionalNome}) foi concluído.\n\nRecibo\nServiço${v.adicionalUrgencia?" + urgência":""}: ${brl(v.subtotal)}\nTaxa da plataforma: ${brl(v.taxaPlataforma)}${v.descontoPix?`\nDesconto Pix: -${brl(v.descontoPix)}`:""}\nTotal pago: ${brl(v.total)} (${PAG[t.pagamento]})\n\nComo foi o atendimento? Dê sua nota de 1 a 5 em ${linkSistema()}#cliente-consulta usando o código ${t.codigo} e seu telefone, ou responda esta mensagem.`};
+  if(tipo==="profConfirmou"){const p=D.profs.find(x=>x.id===t.profissionalId);const n=p?notaProf(p):{total:0};return{assunto:`ResolveJá · Profissional confirmado para ${t.codigo}`,texto:`Olá, ${t.clienteNome.split(" ")[0]}! Boa notícia: ${t.profissionalNome} confirmou o seu atendimento.
+
+Pedido: ${t.codigo}
+Serviço: ${ESPEC[t.servico]}
+Data: ${fmtData(t.data)} às ${t.horario}
+Profissional: ${t.profissionalNome}${p?` · ${n.total?`nota ${n.media.toFixed(1).replace(".",",")} (${n.total} avaliações)`:"novo na plataforma"} · ${p.experiencia} anos de experiência`:""}
+Valor: ${brl(v.total)} · ${PAG[t.pagamento]}
+
+Veja o perfil do profissional e acompanhe em ${linkSistema()}#cliente-consulta com o código ${t.codigo} e seu telefone.`}}
+  if(tipo==="cancelamento")return{assunto:`ResolveJá · Pedido ${t.codigo} cancelado`,texto:`Olá, ${t.clienteNome.split(" ")[0]}. O pedido ${t.codigo} foi cancelado e o horário de ${fmtData(t.data)} às ${t.horario} foi liberado.${t.pagamentoStatus==="estornado"?` O estorno de ${brl(v.total)} foi registrado (simulação).`:""}\nSe precisar, é só chamar a ResolveJá de novo.`};
+  return{assunto:"ResolveJá",texto:""};
+}
+function caixaAviso(tipo,t,titulo){
+  const m=mensagem(tipo,t);const tel=digitos(t.telefone);const enviados=(t.avisos||[]).filter(a=>a.tipo===tipo);
+  return`<div class="aviso-box"><div class="row between"><b>${esc(titulo)}</b>${enviados.length?`<span class="chip st-concluido">Enviado ${enviados.length}×</span>`:`<span class="chip st-agendado">Ainda não enviado</span>`}</div>
+    <pre>${esc(m.texto)}</pre>
+    <div class="row"><a class="btn wa sm" href="https://wa.me/55${tel}?text=${encodeURIComponent(m.texto)}" target="_blank" rel="noopener" data-action="registrarAviso" data-id="${esc(t.codigo)}" data-tipo="${tipo}" data-meio="WhatsApp">Enviar por WhatsApp</a>
+    ${t.email?`<a class="btn ghost sm" href="mailto:${esc(t.email)}?subject=${encodeURIComponent(m.assunto)}&body=${encodeURIComponent(m.texto)}" data-action="registrarAviso" data-id="${esc(t.codigo)}" data-tipo="${tipo}" data-meio="e-mail">Enviar por e-mail</a>`:`<span class="muted small">Cliente sem e-mail cadastrado.</span>`}
+    <button class="btn ghost sm" data-action="copiarAviso" data-id="${esc(t.codigo)}" data-tipo="${tipo}">Copiar texto</button></div></div>`;
+}
+const NOME_AVISO={profConfirmou:"confirmação do profissional",confirmacao:"confirmação do pedido",conclusao:"conclusão e recibo",cancelamento:"cancelamento"};
+
+/* ---------- Profissional: avatar, perfil e ordem de serviço ---------- */
+const PELES=["#f1c7a5","#d9a27e","#b9785a","#8d5a3f","#6b4430"],ROUPAS=["#0f4c45","#245e9f","#8f5200","#1d7f46","#5a3e8c"],CABELOS=["#13201e","#3b2a1e","#5a3b22","#2b2b2b"];
+function avatar(p,size=56){
+  const h=[...p.id+p.nome].reduce((a,c)=>a+c.charCodeAt(0),0);
+  const pele=PELES[h%5],roupa=ROUPAS[(h>>1)%5],cabelo=CABELOS[(h>>2)%4];
+  return`<svg class="avatar" width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#e4efec"/><path d="M8 66c2-15 12-21 24-21s22 6 24 21z" fill="${roupa}"/><rect x="27" y="36" width="10" height="11" rx="4" fill="${pele}"/><circle cx="32" cy="27" r="12" fill="${pele}"/><path d="M19.5 27c-.5-9.5 5.5-14.5 12.5-14.5s13 5 12.5 14.5c-2.5-5.5-7.5-7-12.5-7s-10 1.5-12.5 7z" fill="${cabelo}"/><circle cx="27.5" cy="28" r="1.4" fill="#13201e"/><circle cx="36.5" cy="28" r="1.4" fill="#13201e"/><path d="M28 33q4 3 8 0" fill="none" stroke="#13201e" stroke-width="1.4" stroke-linecap="round"/></svg>`;
+}
+function statsProf(p){
+  const T=D.transacoes.filter(t=>t.profissionalId===p.id);
+  const conc=T.filter(t=>t.status==="concluido"),canc=T.filter(t=>t.status==="cancelado");
+  return{n:notaProf(p),concluidos:conc.length,cancelados:canc.length,proximos:T.filter(ativa).sort((a,b)=>(a.data+a.horario)<(b.data+b.horario)?-1:1),
+    avaliacoes:T.filter(t=>t.avaliacao).sort((a,b)=>a.avaliacao.em<b.avaliacao.em?1:-1)};
+}
+function abrirPerfil(id,modo){
+  const p=D.profs.find(x=>x.id===id);if(!p)return;const s=statsProf(p);const interno=modo!=="cliente";
+  const html=`<div class="perfil-top">${avatar(p,88)}<div class="stack" style="gap:4px"><h2>${esc(p.nome)}</h2><span class="muted">${esc(ESPEC[p.especialidade])} · ${esc(local(p.bairro,p.regiao))}</span>
+      <div class="row small"><span>${s.n.total?`${estrelas(s.n.media)} <b>${s.n.media.toFixed(1).replace(".",",")}</b> (${s.n.total} avaliações)`:notaHTML(s.n)}</span><span>· ${p.experiencia} anos de experiência</span>${interno?(p.disponivel?`<span class="chip st-concluido">Disponível</span>`:`<span class="chip st-cancelado">Indisponível</span>`):""}</div></div></div>
+    <p>${esc(p.bio)}</p>
+    <div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span>Nota média</span><b>${s.n.total?s.n.media.toFixed(1).replace(".",",")+" ★":"—"}</b><em>${s.n.total?`${s.n.total} avaliações no total`:"Novo na plataforma"}</em></div><div class="kpi"><span>Serviços pela ResolveJá</span><b>${s.concluidos}</b><em>concluídos neste sistema</em></div><div class="kpi"><span>Preço</span><b style="font-size:1.05rem">${brl(p.precoBase)} + ${brl(p.precoHora)}/h</b><em>base + valor por hora</em></div></div>
+    ${interno?`<div class="card stack" style="padding:14px"><div class="row between"><div><b>Contato</b><p class="muted small">${esc(fmtTel(p.telefone))} · usado pela central, não é passado ao cliente</p></div><div class="row"><a class="btn wa sm" href="https://wa.me/55${digitos(p.telefone)}" target="_blank" rel="noopener">WhatsApp</a><a class="btn ghost sm" href="tel:+55${digitos(p.telefone)}">Ligar</a></div></div>
+      <div><b>Próximos serviços</b>${s.proximos.length?`<ul class="lista-simples">${s.proximos.map(t=>`<li><a href="#central-${esc(t.codigo)}">${esc(t.codigo)}</a> · ${fmtData(t.data)} das ${esc(t.horario)} às ${hmDe(t.fimMin)} · ${esc(t.bairro)} ${chipOrdem(t)}</li>`).join("")}</ul>`:`<p class="muted small">Nenhum serviço agendado.</p>`}</div>
+      ${s.cancelados?`<p class="muted small">${s.cancelados} pedido(s) cancelado(s) com este profissional.</p>`:""}</div>`:""}
+    <div><h3>O que os clientes dizem</h3>${s.avaliacoes.length?s.avaliacoes.slice(0,5).map(t=>`<div class="rev"><div class="row between small"><span>${estrelas(t.avaliacao.nota)} <b>${esc(t.clienteNome.split(" ")[0])}</b> · ${esc(ESPEC[t.servico])}</span><span class="muted">${fmtData(isoDia(new Date(t.avaliacao.em)))}</span></div>${t.avaliacao.comentario?`<p class="small">“${esc(t.avaliacao.comentario)}”</p>`:`<p class="muted small">Sem comentário.</p>`}</div>`).join(""):`<p class="muted small">Ainda não há avaliações feitas neste sistema. A nota inclui o histórico anterior do profissional.</p>`}</div>`;
+  abrirModal({titulo:interno?"Perfil do profissional":"Seu profissional",wide:true,html});
+}
+const situacaoOrdem=t=>!t.ordem||!t.ordem.enviadaEm?"nao_enviada":t.ordem.confirmadaEm?"confirmada":t.ordem.recusadaEm?"recusada":"aguardando";
+const ORDEM={recusada:["Profissional recusou","st-cancelado"],nao_enviada:["Ordem não enviada","st-cancelado"],aguardando:["Aguardando o profissional","st-agendado"],confirmada:["Profissional confirmou","st-concluido"]};
+function chipOrdem(t){if(t.status==="concluido"||t.status==="cancelado")return"";const[n,c]=ORDEM[situacaoOrdem(t)];return`<span class="chip ${c}">${n}</span>`}
+function mensagemProf(tipo,t){
+  const v=t.valores;const p=t.profissionalNome.split(" ")[0];
+  if(tipo==="cancelProf")return`Olá, ${p}. O pedido ${t.codigo} de ${fmtData(t.data)} às ${t.horario} (${t.bairro}) foi CANCELADO pelo cliente. Seu horário está livre. Obrigado!`;
+  const anx=(t.anexos||[]).length;
+  return`Olá, ${p}! Nova ordem de serviço da ResolveJá.\n\nPedido: ${t.codigo}\nServiço: ${ESPEC[t.servico]} · urgência ${URG[t.urgencia].toLowerCase()} · ${fmtH(t.horas)}\nQuando: ${fmtData(t.data)} das ${t.horario} às ${hmDe(t.fimMin)}\nCliente: ${t.clienteNome} · ${fmtTel(t.telefone)}\nEndereço: ${t.endereco}, ${t.bairro}\nProblema relatado: "${t.descricao}"${anx?`\nFotos do problema: ${anx} anexo(s) com a central, pedimos envio por aqui.`:""}\n\nPagamento: ${t.pagamento==="dinheiro"?`receber ${brl(v.total)} em dinheiro do cliente ao concluir`:`${PAG[t.pagamento]}, já aprovado pela plataforma (simulação)`}\nValor do serviço para você: ${brl(v.subtotal)}\n\nResponda OK para confirmar. Ao terminar, avise a central para registrarmos a conclusão.`;
+}
+function caixaProf(t,compacta){
+  const p=D.profs.find(x=>x.id===t.profissionalId);if(!p)return"";const s=notaProf(p);const sit=situacaoOrdem(t);
+  const tipo=t.status==="cancelado"?"cancelProf":"ordem";const txt=mensagemProf(tipo,t);
+  const enviadoCanc=(t.ordem&&t.ordem.cancelAvisadoEm);
+  const mostrarMsg=t.status!=="concluido"&&!(t.status==="cancelado"&&!t.ordem);
+  return`<div class="aviso-box"><div class="row between"><b>${t.status==="cancelado"?"Avisar o profissional: cancelamento":"Avisar o profissional: ordem de serviço"}</b>${t.status==="cancelado"?(enviadoCanc?`<span class="chip st-concluido">Avisado</span>`:`<span class="chip st-agendado">Ainda não avisado</span>`):t.status==="concluido"?`<span class="chip st-concluido">Serviço concluído</span>`:chipOrdem(t)}</div>
+    <div class="prof-mini">${avatar(p,48)}<div><button type="button" class="linkbtn" data-action="verPerfil" data-id="${esc(p.id)}" data-modo="central">${esc(p.nome)}</button><div class="muted small">${estrelas(s.media)} ${s.media.toFixed(1).replace(".",",")} (${s.total}) · ${p.experiencia} anos · ${esc(fmtTel(p.telefone))}</div></div></div>
+    ${mostrarMsg?`<pre>${esc(txt)}</pre>
+    <div class="row"><a class="btn wa sm" href="https://wa.me/55${digitos(p.telefone)}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener" data-action="registrarAviso" data-alvo="prof" data-id="${esc(t.codigo)}" data-tipo="${tipo}" data-meio="WhatsApp">Enviar ao profissional</a><button class="btn ghost sm" data-action="copiarAviso" data-alvo="prof" data-id="${esc(t.codigo)}" data-tipo="${tipo}">Copiar texto</button>
+    ${ativa(t)&&sit==="aguardando"?`<button class="btn primary sm" data-action="confirmarProf" data-id="${esc(t.codigo)}">Registrar: profissional confirmou</button>`:""}</div>
+    ${ativa(t)&&sit==="nao_enviada"&&!compacta?`<p class="muted small">Envie a ordem para o profissional confirmar o horário.</p>`:""}
+    ${sit==="confirmada"&&ativa(t)?`<p class="muted small">Confirmado em ${fmtDH(t.ordem.confirmadaEm)}.</p>`:""}`:""}</div>`;
+}
+
+/* ---------- Notas, avisos pendentes e troca de profissional ---------- */
+const notaHTML=n=>n.total?`${estrelas(n.media)} ${n.media.toFixed(1).replace(".",",")} (${n.total})`:`<span class="chip st-agendado">Novo na plataforma</span>`;
+function avisosPendentes(){
+  const L=[];const enviou=(t,tipo)=>(t.avisos||[]).some(a=>a.tipo===tipo);
+  for(const t of D.transacoes.filter(x=>!x.seed)){
+    const sit=situacaoOrdem(t);
+    if(ativa(t)&&sit==="recusada")L.push({alta:true,id:t.codigo,t:`Trocar o profissional de ${t.codigo}`,d:`${t.profissionalNome} recusou: ${t.ordem.motivoRecusa||"sem motivo informado"}.`});
+    else if(ativa(t)&&sit==="confirmada"&&!enviou(t,"profConfirmou"))L.push({id:t.codigo,t:`Avisar ${t.clienteNome.split(" ")[0]}: o profissional confirmou`,d:`${t.profissionalNome} aceitou o serviço de ${fmtData(t.data)} às ${t.horario}.`});
+    else if(ativa(t)&&sit!=="confirmada"&&!enviou(t,"confirmacao"))L.push({id:t.codigo,t:`Enviar a confirmação do pedido a ${t.clienteNome.split(" ")[0]}`,d:`Pedido ${t.codigo} criado e ainda sem aviso ao cliente.`});
+    else if(t.status==="concluido"&&!enviou(t,"conclusao"))L.push({id:t.codigo,t:`Enviar o recibo a ${t.clienteNome.split(" ")[0]}`,d:`Serviço ${t.codigo} concluído${t.conclusaoPor==="profissional"?" e informado pelo profissional":""}.`});
+    else if(t.status==="cancelado"&&!enviou(t,"cancelamento"))L.push({id:t.codigo,t:`Avisar ${t.clienteNome.split(" ")[0]} do cancelamento`,d:`Pedido ${t.codigo} cancelado.`});
+  }
+  return L.sort((a,b)=>(b.alta?1:0)-(a.alta?1:0));
+}
+function trocarProfissional(t,novo){
+  const ant=t.profissionalNome;const agora=agoraISO();const motivo=situacaoOrdem(t)==="recusada"?`recusa de ${ant}`:"decisão da central";
+  const v=calcular(novo,t.horas,t.urgencia,t.pagamento);const dif=r2(v.total-t.valores.total);
+  t.profissionalId=novo.id;t.profissionalNome=novo.nome;t.valores=v;t.ordem={enviadaEm:agora,meio:"sistema"};
+  t.eventos.push(ev("entrada",`Central trocou o profissional: ${ant} → ${novo.nome} (${motivo}).`),ev("processamento",`Agenda conferida: ${novo.nome} livre em ${fmtData(t.data)} das ${t.horario} às ${hmDe(t.fimMin)}.`),
+    ev("processamento",`Valor recalculado: ${brl(v.total)}${dif?` (${dif>0?"+":""}${brl(dif)}${t.pagamentoStatus==="pago"?", ajustado no pagamento simulado":""})`:" (sem diferença)"}.`),ev("saida",`Ordem de serviço disponibilizada a ${novo.nome} na área do profissional.`));
+}
+function abrirTroca(t){
+  const lista=D.profs.filter(p=>p.id!==t.profissionalId&&p.disponivel&&p.especialidade===t.servico&&!sobrepoe(p.id,t.data,t.inicioMin,t.fimMin)).map(p=>({p,n:notaProf(p),v:calcular(p,t.horas,t.urgencia,t.pagamento)})).sort((a,b)=>(b.p.regiao===t.regiao)-(a.p.regiao===t.regiao)||b.n.media-a.n.media);
+  abrirModal({titulo:`Trocar o profissional de ${t.codigo}`,wide:true,html:`<p class="muted small">${esc(ESPEC[t.servico])} em ${fmtData(t.data)} das ${esc(t.horario)} às ${hmDe(t.fimMin)} · ${esc(local(t.bairro,t.regiao))}. Valor atual: ${brl(t.valores.total)}.</p>
+    ${lista.length?`<div class="stack">${lista.map(x=>`<div class="pro"><div class="prof-mini">${avatar(x.p,44)}<div><button type="button" class="linkbtn" data-action="verPerfil" data-id="${esc(x.p.id)}" data-modo="central">${esc(x.p.nome)}</button><div class="meta"><span>${notaHTML(x.n)}</span><span>${x.p.experiencia} anos</span><span>${esc(local(x.p.bairro,x.p.regiao))}</span></div></div></div><div style="text-align:right"><b class="num">${brl(x.v.total)}</b><br><button class="btn primary sm" data-action="confirmarTroca" data-id="${esc(t.codigo)}" data-v="${esc(x.p.id)}" style="margin-top:4px">Escolher</button></div></div>`).join("")}</div>`:`<p class="notice warn">Nenhum outro profissional livre nesse horário. Cancele o pedido ou combine nova data com o cliente.</p>`}`});
+}
+
+/* ---------- Cadastro de profissionais ---------- */
+const MOTIVOS_CAD=["Documentação incompleta","Não foi possível confirmar o contato","Experiência insuficiente para a especialidade","Preço fora da faixa da plataforma","Outro motivo"];
+const CHECKS=[["tel","Telefone confirmado por ligação ou WhatsApp"],["doc","Documento de identidade conferido"],["exp","Experiência ou certificado comprovado (eletricista: NR-10)"],["preco","Preço dentro da faixa da plataforma"]];
+function faixa(esp){const ps=D.profs.filter(p=>p.especialidade===esp);if(!ps.length)return null;const b=ps.map(p=>p.precoBase),h=ps.map(p=>p.precoHora);return{bMin:Math.min(...b),bMax:Math.max(...b),hMin:Math.min(...h),hMax:Math.max(...h)}}
+const novoCad=()=>({nome:"",telefone:"",email:"",especialidade:"",bairro:"",experiencia:"",precoBase:"",precoHora:"",bio:"",aceite:false,anexos:[]});
+S.cad=novoCad();S.prof={tel:"",id:null,erro:""};S.cads={aba:"em_analise"};
+function seedCandidaturas(){
+  const ag=Date.now();const h=(x)=>new Date(ag-x*36e5).toISOString();
+  return[{id:"C-0001",criadoEm:h(52),nome:"Rodrigo Santana",telefone:"81996660001",email:"rodrigo.s@exemplo.com",especialidade:"eletricista",bairro:"Boa Viagem",regiao:"Zona Sul",experiencia:6,precoBase:75,precoHora:60,bio:"Eletricista residencial com curso técnico e NR-10. Atendo instalações, troca de quadros e manutenção preventiva.",anexos:[],status:"em_analise",checks:{tel:true,doc:false,exp:false,preco:true},historico:[{em:h(52),texto:"Cadastro enviado pelo profissional."},{em:h(30),texto:"Telefone confirmado pela gerência."}],seed:true},
+    {id:"C-0002",criadoEm:h(5),nome:"Lúcia Ferraz",telefone:"81996660002",email:"lucia.f@exemplo.com",especialidade:"pintor",bairro:"Madalena",regiao:"Zona Oeste",experiencia:12,precoBase:95,precoHora:38,bio:"Pintora há 12 anos, especialista em textura, grafiato e tratamento de mofo. Trabalho limpo e com proteção dos móveis.",anexos:[],status:"em_analise",checks:{tel:false,doc:false,exp:false,preco:false},historico:[{em:h(5),texto:"Cadastro enviado pelo profissional."}],seed:true},
+    {id:"C-0003",criadoEm:h(120),nome:"Diego Barros",telefone:"81996660003",email:"",especialidade:"montador",bairro:"Ibura",regiao:"Zona Sul",experiencia:1,precoBase:40,precoHora:30,bio:"Comecei a montar móveis no ano passado.",anexos:[],status:"recusada",motivo:"Experiência insuficiente para a especialidade",analisadoEm:h(96),checks:{tel:true,doc:true,exp:false,preco:false},historico:[{em:h(120),texto:"Cadastro enviado pelo profissional."},{em:h(96),texto:"Cadastro recusado: experiência insuficiente para a especialidade."}],seed:true}];
+}
+function vProfCadastro(){
+  if(S.candUltimo){const c=D.candidaturas.find(x=>x.id===S.candUltimo);
+    return`<section class="card stack" style="max-width:640px;margin:0 auto;text-align:center;align-items:center"><span class="tag f-saida">Cadastro enviado</span><p class="muted">Seu protocolo</p><div class="protocolo">${esc(c.id)}</div>
+      <p>A gerência da ResolveJá vai conferir seus dados e documentos e falar com você pelo ${esc(fmtTel(c.telefone))}.</p><p class="muted small">Acompanhe a análise em <b>Minhas ordens</b>, entrando com o seu telefone. Depois de aprovado, é lá que você recebe e aceita os serviços.</p>
+      <div class="row" style="justify-content:center"><a class="btn primary" href="#profissional-ordens" data-action="prepProf" data-v="${esc(c.telefone)}">Acompanhar meu cadastro</a><button class="btn ghost" data-action="novoCad">Novo cadastro</button></div></section>`}
+  const f=S.cad;const fx=f.especialidade&&faixa(f.especialidade);
+  const bai=`<option value="">Selecione</option>`+REGIOES.map(r=>`<optgroup label="${r}">${BAIRROS[r].map(b=>`<option ${b===f.bairro?"selected":""}>${b}</option>`).join("")}</optgroup>`).join("");
+  return`<section class="cli">
+    <div class="cli-txt"><span class="pill"><span class="dot"></span>${D.profs.filter(p=>p.disponivel).length} profissionais parceiros no Recife</span>
+      <h1>Trabalhe com a ResolveJá</h1><p class="lead">Receba serviços perto de você, com horário marcado, endereço e valor definidos antes de sair de casa.</p>
+      <ol class="passos"><li><span class="n">1</span><div><b>Envie seu cadastro</b><p class="muted small">Especialidade, bairro, experiência e seus preços.</p></div></li><li><span class="n">2</span><div><b>Validação da gerência</b><p class="muted small">Conferimos contato, documento e experiência. Você acompanha pelo telefone.</p></div></li><li><span class="n">3</span><div><b>Receba ordens de serviço</b><p class="muted small">Em Minhas ordens você aceita ou recusa cada serviço e informa a conclusão.</p></div></li></ol>
+      <div class="card small stack" style="padding:14px"><b>Como você recebe</b><p class="muted">O valor do serviço (preço base + horas, com o adicional de urgência quando houver) é seu. A ResolveJá cobra do cliente a taxa de 10% à parte.</p></div></div>
+    <form class="card stack" data-form="enviarCad" novalidate><h2>Cadastro de profissional</h2>
+      <div class="fgrid">
+        <label class="f full" for="p-nome">Nome completo<input id="p-nome" data-bind="cad.nome" value="${esc(f.nome)}" autocomplete="name"></label>
+        <label class="f" for="p-tel">Telefone com DDD (WhatsApp)<input id="p-tel" data-bind="cad.telefone" value="${esc(f.telefone)}" inputmode="tel" placeholder="(81) 99999-0000"></label>
+        <label class="f" for="p-email">E-mail <span class="hint">(opcional)</span><input id="p-email" type="email" data-bind="cad.email" value="${esc(f.email)}"></label>
+        <label class="f" for="p-esp">Especialidade<select id="p-esp" data-bind="cad.especialidade" data-rerender="1"><option value="">Selecione</option>${Object.entries(ESPEC).map(([k,n])=>`<option value="${k}" ${k===f.especialidade?"selected":""}>${n}</option>`).join("")}</select></label>
+        <label class="f" for="p-bairro">Bairro onde mora ou atende<select id="p-bairro" data-bind="cad.bairro">${bai}</select></label>
+        <label class="f" for="p-exp">Anos de experiência<input id="p-exp" type="number" min="0" max="50" data-bind="cad.experiencia" value="${esc(f.experiencia)}"></label>
+        <div class="fgrid" style="gap:10px"><label class="f" for="p-base">Preço base (R$)<input id="p-base" type="number" min="1" step="1" data-bind="cad.precoBase" value="${esc(f.precoBase)}"></label><label class="f" for="p-hora">Por hora (R$)<input id="p-hora" type="number" min="1" step="1" data-bind="cad.precoHora" value="${esc(f.precoHora)}"></label></div>
+        ${fx?`<p class="full hint">Faixa praticada hoje por ${esc(ESPEC[f.especialidade].toLowerCase())}s na plataforma: base de ${brl(fx.bMin)} a ${brl(fx.bMax)} e hora de ${brl(fx.hMin)} a ${brl(fx.hMax)}.</p>`:""}
+        <label class="f full" for="p-bio">Apresentação<textarea id="p-bio" data-bind="cad.bio" placeholder="Conte o que você faz, há quanto tempo e seus diferenciais.">${esc(f.bio)}</textarea></label>
+        <div class="f full"><span>Documentos e fotos de trabalhos <span class="hint">(opcional: certificado, carteira profissional, fotos de serviços feitos)</span></span>${htmlAnexosLocais(S.cad.anexos,"cad")}</div>
+        <label class="full row small" style="align-items:flex-start;flex-wrap:nowrap"><input type="checkbox" data-bind="cad.aceite" ${f.aceite?"checked":""} style="margin-top:4px"><span>Declaro que as informações são verdadeiras e autorizo a ResolveJá a conferir meus dados e documentos.</span></label>
+      </div>
+      ${S.cadErro?`<ul class="erros">${S.cadErro.map(e=>`<li>${esc(e)}</li>`).join("")}</ul>`:""}
+      <button class="btn accent lg" type="submit">Enviar cadastro para análise</button></form></section>`;
+}
+function htmlAnexosLocais(lista,alvo){return`<div class="anexos">${lista.map(a=>`<div class="ax">${a.tipo==="application/pdf"?`<span class="pdf">PDF</span>`:`<img src="${a.dataURL}" alt="${esc(a.nome)}">`}<small>${esc(a.nome)}</small></div>`).join("")}${lista.length<3?`<label class="addax">+ Adicionar<input type="file" accept="image/*,application/pdf" multiple data-upload="${alvo}"></label>`:""}${lista.length?`<button type="button" class="btn ghost sm" data-action="limparAnexosLocais" data-v="${alvo}">Remover anexos</button>`:""}</div>`}
+async function enviarCad(){
+  const f=S.cad,e=[];const tel=digitos(f.telefone);
+  if(f.nome.trim().length<3)e.push("Informe seu nome.");
+  if(tel.length<10)e.push("Informe o telefone com DDD.");
+  else if(D.profs.some(p=>digitos(p.telefone)===tel))e.push("Esse telefone já pertence a um profissional da plataforma.");
+  else if(D.candidaturas.some(c=>c.telefone===tel&&c.status==="em_analise"))e.push("Já existe um cadastro em análise com esse telefone.");
+  if(!f.especialidade)e.push("Escolha a especialidade.");
+  if(!f.bairro)e.push("Escolha o bairro.");
+  const xp=Number(f.experiencia);if(f.experiencia===""||!(xp>=0&&xp<=50))e.push("Informe os anos de experiência (0 a 50).");
+  if(!(Number(f.precoBase)>0)||!(Number(f.precoHora)>0))e.push("Informe o preço base e o preço por hora.");
+  if(f.bio.trim().length<20)e.push("Escreva uma apresentação com pelo menos 20 letras.");
+  if(!f.aceite)e.push("Marque a declaração.");
+  if(e.length){S.cadErro=e;render();return}
+  S.cadErro=null;const id="C-"+String(++D.seq.cand).padStart(4,"0");const ids=[];
+  for(const a of f.anexos){const axId="AX-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await ANEXOS.put(axId,a.dataURL);D.anexos.push({id:axId,nome:a.nome,tipo:a.tipo,tam:Math.round(a.dataURL.length*.75),ref:{tipo:"cadastro",id},criadoEm:agoraISO()});ids.push(axId)}
+  D.candidaturas.push({id,criadoEm:agoraISO(),nome:f.nome.trim(),telefone:tel,email:f.email.trim(),especialidade:f.especialidade,bairro:f.bairro,regiao:regiaoDe(f.bairro),experiencia:xp,precoBase:r2(Number(f.precoBase)),precoHora:r2(Number(f.precoHora)),bio:f.bio.trim(),anexos:ids,status:"em_analise",checks:{tel:false,doc:false,exp:false,preco:false},historico:[{em:agoraISO(),texto:"Cadastro enviado pelo profissional."}],seed:false});
+  salvar();S.candUltimo=id;S.cad=novoCad();render();window.scrollTo(0,0);
+}
+function vProfOrdens(){
+  const p=S.prof.id&&D.profs.find(x=>x.id===S.prof.id);
+  if(!p){const c=S.prof.tel&&[...D.candidaturas].reverse().find(x=>x.telefone===digitos(S.prof.tel));
+    const login=`<form class="card stack" data-form="loginProf" style="max-width:560px"><h2>Entrar na área do profissional</h2><p class="muted small">Use o telefone informado no cadastro.</p>
+      <div class="row" style="align-items:flex-end"><label class="f" for="l-tel" style="flex:1;min-width:200px">Telefone<input id="l-tel" data-bind="prof.tel" value="${esc(S.prof.tel)}" inputmode="tel" placeholder="(81) 99999-0000"></label><button class="btn primary" type="submit">Entrar</button></div>
+      ${S.prof.erro?`<p class="notice bad small">${esc(S.prof.erro)}</p>`:""}
+      <details class="guia-box"><summary>Demonstração: entrar como um profissional cadastrado</summary><div class="row" style="margin-top:8px"><select id="l-demo" aria-label="Profissional para demonstração">${[...D.profs].sort((a,b)=>a.nome.localeCompare(b.nome)).map(x=>`<option value="${esc(x.telefone)}">${esc(x.nome)} · ${esc(ESPEC[x.especialidade])}</option>`).join("")}</select><button type="button" class="btn ghost sm" data-action="loginDemo">Entrar</button></div></details></form>`;
+    let st="";
+    if(c){const[n,cl]={em_analise:["Em análise","st-agendado"],aprovada:["Aprovado","st-concluido"],recusada:["Não aprovado","st-cancelado"]}[c.status];
+      st=`<div class="card stack" style="max-width:560px"><div class="row between"><h3>Cadastro ${esc(c.id)}</h3><span class="chip ${cl}">${n}</span></div><p class="muted small">${esc(c.nome)} · ${esc(ESPEC[c.especialidade])} · enviado em ${fmtDH(c.criadoEm)}</p>
+        ${c.status==="em_analise"?`<p>A gerência está conferindo seus dados (${Object.values(c.checks).filter(Boolean).length} de ${CHECKS.length} itens já conferidos). Você será avisado pelo telefone.</p>`:c.status==="recusada"?`<p>Motivo: ${esc(c.motivo)}. Você pode enviar um novo cadastro quando quiser.</p>`:""}</div>`}
+    return`<div class="pagehead"><div><h1>Minhas ordens</h1><p>Área do profissional: aceite ou recuse os serviços que a central encaminhou e informe quando terminar.</p></div></div>${st}${login}`;}
+  const n=notaProf(p);const T=D.transacoes.filter(t=>t.profissionalId===p.id);
+  const novas=T.filter(t=>ativa(t)&&situacaoOrdem(t)==="aguardando").sort((a,b)=>(a.data+a.horario)<(b.data+b.horario)?-1:1);
+  const prox=T.filter(t=>ativa(t)&&situacaoOrdem(t)==="confirmada").sort((a,b)=>(a.data+a.horario)<(b.data+b.horario)?-1:1);
+  const hist=T.filter(t=>!ativa(t)).sort((a,b)=>a.data<b.data?1:-1).slice(0,8);
+  const receber=r2(prox.concat(novas).reduce((a,t)=>a+t.valores.subtotal,0)),recebido=r2(T.filter(t=>t.status==="concluido").reduce((a,t)=>a+t.valores.subtotal,0));
+  const cartao=(t,acoes)=>`<div class="ordem"><div class="row between"><div class="row"><b class="num">${esc(t.codigo)}</b>${t.urgencia==="alta"?`<span class="tag f-processamento">urgente</span>`:""}</div><b class="num">${brl(t.valores.subtotal)}</b></div>
+      <div class="det"><div><div class="k">Quando</div><div class="v">${fmtData(t.data)}</div><div class="muted small">${esc(t.horario)} às ${hmDe(t.fimMin)}</div></div><div><div class="k">Onde</div><div class="v">${esc(t.endereco)}</div><div class="muted small">${esc(local(t.bairro,t.regiao))}</div></div><div><div class="k">Cliente</div><div class="v">${esc(t.clienteNome)}</div><div class="muted small">${esc(fmtTel(t.telefone))}</div></div></div>
+      <p class="small"><b>Problema:</b> “${esc(t.descricao)}”</p>
+      <p class="small muted">Pagamento: ${t.pagamento==="dinheiro"?`receber ${brl(t.valores.total)} em dinheiro do cliente ao concluir`:`${esc(PAG[t.pagamento])} já aprovado pela plataforma (simulação)`}. Valor do serviço para você: ${brl(t.valores.subtotal)}.</p>
+      ${(t.anexos||[]).length?htmlAnexos(t.anexos):""}<div class="row">${acoes}</div></div>`;
+  return`<div class="pagehead"><div><h1>Minhas ordens</h1><p>Área do profissional. O que você aceita aqui aparece na hora para a central e para o cliente.</p></div><button class="btn ghost sm" data-action="sairProf">Sair</button></div>
+  <div class="card meu-prof">${avatar(p,64)}<div style="flex:1"><b style="font-size:1.15rem">${esc(p.nome)}</b><div class="small">${esc(ESPEC[p.especialidade])} · ${esc(local(p.bairro,p.regiao))} · ${notaHTML(n)}</div></div>
+    <div class="row"><span class="small muted">Disponível para novos serviços</span><button class="toggle ${p.disponivel?"on":"off"}" data-action="dispProprio" aria-pressed="${p.disponivel}">${p.disponivel?"Sim":"Não"}</button><button class="btn ghost sm" data-action="verPerfil" data-id="${esc(p.id)}" data-modo="cliente">Ver meu perfil público</button></div></div>
+  <div class="kpis"><div class="kpi hl"><span>Novas ordens</span><b>${novas.length}</b></div><div class="kpi"><span>Serviços agendados</span><b>${prox.length}</b></div><div class="kpi"><span>A receber</span><b>${brl(receber)}</b></div><div class="kpi"><span>Já recebido</span><b>${brl(recebido)}</b></div></div>
+  <section class="stack"><h2>Novas ordens ${novas.length?`<span class="badge">${novas.length}</span>`:""}</h2>${novas.length?novas.map(t=>cartao(t,`<button class="btn primary" data-action="profAceitar" data-id="${esc(t.codigo)}">Aceitar serviço</button><button class="btn danger" data-action="profRecusar" data-id="${esc(t.codigo)}">Recusar</button>`)).join(""):`<p class="muted">Nenhuma ordem esperando sua resposta.</p>`}</section>
+  <section class="stack"><h2>Serviços agendados</h2>${prox.length?prox.map(t=>cartao(t,`<button class="btn accent" data-action="profConcluir" data-id="${esc(t.codigo)}">Informar conclusão</button><a class="btn wa sm" href="https://wa.me/55${digitos(t.telefone)}" target="_blank" rel="noopener">Falar com o cliente</a>`)).join(""):`<p class="muted">Nenhum serviço agendado.</p>`}</section>
+  <section class="stack"><h2>Histórico</h2>${hist.length?`<div class="tbl-wrap"><table class="tbl" style="min-width:560px"><thead><tr><th>Pedido</th><th>Data</th><th>Bairro</th><th class="r">Valor do serviço</th><th>Situação</th><th>Avaliação</th></tr></thead><tbody>${hist.map(t=>`<tr><td class="nw"><b>${esc(t.codigo)}</b></td><td class="nw">${fmtData(t.data)}</td><td>${esc(t.bairro)}</td><td class="r">${brl(t.valores.subtotal)}</td><td>${chip(t.status)}</td><td>${t.avaliacao?`${estrelas(t.avaliacao.nota)}${t.avaliacao.comentario?`<br><span class="muted small">“${esc(t.avaliacao.comentario)}”</span>`:""}`:"—"}</td></tr>`).join("")}</tbody></table></div>`:`<p class="muted">Ainda sem serviços concluídos.</p>`}</section>`;
+}
+function vCadastros(){
+  const aba=S.cads.aba;const cont=k=>D.candidaturas.filter(c=>c.status===k).length;
+  const lista=D.candidaturas.filter(c=>c.status===aba).sort((a,b)=>a.criadoEm<b.criadoEm?(aba==="em_analise"?-1:1):(aba==="em_analise"?1:-1));
+  const card=c=>{const fx=faixa(c.especialidade);const fora=fx&&(c.precoBase<fx.bMin*.85||c.precoBase>fx.bMax*1.15||c.precoHora<fx.hMin*.85||c.precoHora>fx.hMax*1.15);const ok=CHECKS.every(([k])=>c.checks[k]);const pf={id:c.id,nome:c.nome};
+    return`<article class="card stack"><div class="row between"><div class="prof-mini">${avatar(pf,56)}<div><b style="font-size:1.1rem">${esc(c.nome)}</b><div class="small muted">${esc(c.id)} · ${esc(ESPEC[c.especialidade])} · ${esc(local(c.bairro,c.regiao))}</div></div></div>${chip(c.status,{em_analise:"Em análise",aprovada:"Aprovado",recusada:"Recusado"}).replace("st-em_analise","st-agendado").replace("st-aprovada","st-concluido").replace("st-recusada","st-cancelado")}</div>
+      <div class="det"><div><div class="k">Contato</div><div class="v">${esc(fmtTel(c.telefone))}</div><div class="muted small">${esc(c.email||"sem e-mail")}</div></div><div><div class="k">Experiência</div><div class="v">${c.experiencia} anos</div></div><div><div class="k">Preço</div><div class="v">${brl(c.precoBase)} + ${brl(c.precoHora)}/h</div>${fx?`<div class="small ${fora?"":"muted"}" style="${fora?"color:var(--warn);font-weight:600":""}">${fora?"Fora da faixa: ":"Faixa: "}${brl(fx.bMin)}–${brl(fx.bMax)} + ${brl(fx.hMin)}–${brl(fx.hMax)}/h</div>`:""}</div></div>
+      <p class="small">“${esc(c.bio)}”</p>
+      ${c.anexos.length?`<div class="f"><span class="small"><b>Documentos enviados</b></span>${htmlAnexos(c.anexos)}</div>`:`<p class="muted small">Nenhum documento anexado: confira por WhatsApp.</p>`}
+      ${c.status==="em_analise"?`<div class="checklist"><b class="small">Conferência da gerência</b>${CHECKS.map(([k,n])=>`<label class="row small" style="flex-wrap:nowrap"><input type="checkbox" data-action="checkCad" data-id="${esc(c.id)}" data-v="${k}" ${c.checks[k]?"checked":""}> ${esc(n)}</label>`).join("")}</div>
+        <div class="row"><button class="btn primary" data-action="aprovarCad" data-id="${esc(c.id)}" ${ok?"":"disabled"}>Aprovar cadastro</button><button class="btn danger" data-action="recusarCad" data-id="${esc(c.id)}">Recusar</button><a class="btn wa sm" href="https://wa.me/55${digitos(c.telefone)}" target="_blank" rel="noopener">Falar no WhatsApp</a>${ok?"":`<span class="muted small">Marque os ${CHECKS.length} itens para aprovar.</span>`}</div>`
+      :`<p class="small">${c.status==="aprovada"?`Aprovado em ${fmtDH(c.analisadoEm)}. ${c.profId?`<button type="button" class="linkbtn" data-action="verPerfil" data-id="${esc(c.profId)}" data-modo="central">Ver perfil</button>`:""}`:`Recusado em ${fmtDH(c.analisadoEm)}: ${esc(c.motivo)}.`}</p>
+        <div class="aviso-box"><b class="small">Mensagem ao profissional</b><pre>${esc(msgCad(c))}</pre><div class="row"><a class="btn wa sm" href="https://wa.me/55${digitos(c.telefone)}?text=${encodeURIComponent(msgCad(c))}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div></div>`}
+      <details><summary class="small muted">Histórico do cadastro</summary><ul class="lista-simples">${c.historico.map(h=>`<li>${fmtDH(h.em)} · ${esc(h.texto)}</li>`).join("")}</ul></details></article>`};
+  return`<div class="pagehead"><div><h1>Cadastros de profissionais</h1><p>Profissionais que se cadastraram em "Quero ser parceiro". Confira os itens e aprove: o profissional passa a aparecer para a central na hora de agendar.</p></div>
+    <div class="seg">${[["em_analise","Em análise"],["aprovada","Aprovados"],["recusada","Recusados"]].map(([k,n])=>`<button type="button" class="${aba===k?"on":""}" data-action="abaCad" data-v="${k}">${n} (${cont(k)})</button>`).join("")}</div></div>
+  ${lista.length?`<div class="cads">${lista.map(card).join("")}</div>`:`<p class="card muted">Nenhum cadastro nesta situação.</p>`}`;
+}
+function msgCad(c){return c.status==="aprovada"?`Olá, ${c.nome.split(" ")[0]}! Seu cadastro ${c.id} na ResolveJá foi APROVADO. A partir de agora você recebe ordens de serviço em "Minhas ordens", entrando com este telefone: ${linkSistema()}#profissional-ordens. Bem-vindo(a)!`:`Olá, ${c.nome.split(" ")[0]}. Analisamos seu cadastro ${c.id} na ResolveJá e, por enquanto, ele não foi aprovado. Motivo: ${c.motivo}. Você pode enviar um novo cadastro quando quiser.`}
+function aprovarCad(c){
+  const n=D.profs.length+1;let id;do{id="p"+String(n+Math.floor(Math.random()*900)).padStart(2,"0")}while(D.profs.some(p=>p.id===id));
+  D.profs.push({id,nome:c.nome,especialidade:c.especialidade,bairro:c.bairro,regiao:c.regiao,precoBase:c.precoBase,precoHora:c.precoHora,avaliacaoBase:0,totalBase:0,experiencia:c.experiencia,bio:c.bio,disponivel:true,telefone:c.telefone,novo:true,desde:agoraISO()});
+  c.status="aprovada";c.analisadoEm=agoraISO();c.profId=id;c.historico.push({em:agoraISO(),texto:"Cadastro aprovado pela gerência. Profissional ativo na plataforma."});
+}
+
+/* ---------- Rotas ---------- */
+function lerRota(hash){
+  let h0="";try{h0=hash!=null?hash:location.hash}catch(e){}const h=decodeURIComponent(String(h0).replace(/^#/,""));let m;
+  if(!h||h==="cliente")return{v:"cliente"};
+  if(h==="cliente-consulta")return{v:"cliente-consulta"};
+  if(h==="central")return{v:"central"};
+  if(h==="central-atendimento")return{v:"atendimento"};
+  if(h==="central-pedidos")return{v:"pedidos"};
+  if((m=h.match(/^central-(RJ-\d{6})$/)))return{v:"pedido",codigo:m[1]};
+  if(h==="gerente")return{v:"gerente"};
+  if(h==="gerente-chamadas")return{v:"chamadas"};
+  if(h==="gerente-profissionais")return{v:"profs"};
+  if(h==="gerente-cadastros")return{v:"cadastros"};
+  if(h==="profissional")return{v:"prof-cadastro"};
+  if(h==="profissional-ordens")return{v:"prof-ordens"};
+  return{v:"cliente"};
+}
+const lado=v=>v.startsWith("cliente")?"cliente":v.startsWith("prof-")?"profissional":["gerente","chamadas","profs","cadastros"].includes(v)?"gerente":"central";
+/* Navegação que funciona mesmo em visualizadores que bloqueiam links (WhatsApp, Drive, e-mail) */
+function ir(h){h=String(h).replace(/^#/,"");S.modal=null;const a=S.route.v;S.route=lerRota("#"+h);try{history.pushState(null,"","#"+h)}catch(e){}render();if(a!==S.route.v)try{window.scrollTo(0,0)}catch(e){}}
+window.addEventListener("popstate",()=>{S.modal=null;S.route=lerRota();render()});
+document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[href^="#"]');if(!a||e.ctrlKey||e.metaKey||e.shiftKey)return;e.preventDefault();ir(a.getAttribute("href"))},true);
+window.addEventListener("hashchange",()=>{S.modal=null;const a=S.route.v;S.route=lerRota();render();if(a!==S.route.v)window.scrollTo(0,0)});
+
+/* ---------- Render ---------- */
+let pendente=false;
+function agendarRender(){const a=document.activeElement;if(a&&document.getElementById("app").contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=="file"){pendente=true;return}render()}
+document.addEventListener("focusout",()=>setTimeout(()=>{if(pendente){pendente=false;agendarRender()}},0));
+function render(){
+  const v=S.route.v,l=lado(v);
+  const corpo={cliente:vCliente,"cliente-consulta":vConsulta,central:vCentral,atendimento:vAtendimento,pedidos:vPedidos,pedido:vPedido,gerente:vGerente,chamadas:vChamadas,profs:vProfs,cadastros:vCadastros,"prof-cadastro":vProfCadastro,"prof-ordens":vProfOrdens}[v]();
+  const nf=filaAguardando().length;
+  const sub={cliente:[["cliente","Pedir atendimento"],["cliente-consulta","Consultar meu pedido"]],
+    profissional:[["profissional","Quero ser parceiro"],["profissional-ordens",`Minhas ordens${S.prof.id?(()=>{const n=D.transacoes.filter(t=>t.profissionalId===S.prof.id&&ativa(t)&&situacaoOrdem(t)==="aguardando").length;return n?`<span class="badge">${n}</span>`:""})():""}`]],
+    central:[["central",`Fila e atendimento${nf?`<span class="badge">${nf}</span>`:""}`],["central-pedidos",`Pedidos${avisosPendentes().length?`<span class="badge">${avisosPendentes().length}</span>`:""}`]],
+    gerente:[["gerente","Indicadores"],["gerente-chamadas",`Monitoramento de chamadas${alertas().length?`<span class="badge">${alertas().length}</span>`:""}`],["gerente-profissionais","Profissionais"],["gerente-cadastros",`Cadastros${D.candidaturas.filter(c=>c.status==="em_analise").length?`<span class="badge">${D.candidaturas.filter(c=>c.status==="em_analise").length}</span>`:""}`]]}[l];
+  const ativoSub={cliente:"cliente","cliente-consulta":"cliente-consulta",central:"central",atendimento:"central",pedidos:"central-pedidos",pedido:"central-pedidos",gerente:"gerente",chamadas:"gerente-chamadas",profs:"gerente-profissionais",cadastros:"gerente-cadastros","prof-cadastro":"profissional","prof-ordens":"profissional-ordens"}[v];
+  document.getElementById("app").innerHTML=`<header class="top"><div class="wrap top-in">
+      <a class="logo" href="#cliente">${LOGO}<span>Resolve<b>Já</b></span></a>
+      <nav class="visao" aria-label="Escolher a visão"><a href="#cliente" class="${l==="cliente"?"on":""}">Cliente</a><a href="#profissional" class="${l==="profissional"?"on":""}">Profissional</a><a href="#central" class="${l==="central"?"on":""}">Central</a><a href="#gerente" class="${l==="gerente"?"on":""}">Gerente</a></nav>
+      <button class="btn ghost sm" data-action="dados">Dados</button></div></header>
+    <nav class="subnav" aria-label="Seções"><div class="wrap">${sub.map(([h,t])=>`<a href="#${h}" class="${h===ativoSub?"on":""}">${t}</a>`).join("")}</div></nav>
+    <main class="wrap">${S.semArmazenamento?`<div class="notice warn">Este navegador não permite guardar dados. O sistema funciona, mas tudo se perde ao fechar a página.</div>`:""}${corpo}</main>
+    <footer class="foot">ResolveJá · Central de atendimento de serviços domésticos no Recife · Sistema acadêmico: pagamentos simulados, dados guardados neste navegador.</footer>`;
+  renderLayer();hidratarAnexos();
+}
+function renderLayer(){
+  let h="";
+  if(S.modal){const m=S.modal;h+=`<div class="modal-bg" data-action="fecharModal"><div class="modal ${m.wide?"wide":""}" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="row between"><h3 id="mt">${esc(m.titulo)}</h3><button class="btn ghost sm" data-action="fecharModal" aria-label="Fechar">Fechar</button></div>${m.html||""}${m.botoes?`<div class="row" style="justify-content:flex-end">${m.botoes.map((b,i)=>`<button class="btn ${b.classe||"primary"}" data-action="modalBtn" data-i="${i}" ${m.busy?"disabled":""}>${esc(b.rotulo)}</button>`).join("")}</div>`:""}</div></div>`}
+  if(S.toast)h+=`<div class="toast notice ${S.toast.tipo}" role="status">${esc(S.toast.texto)}</div>`;
+  document.getElementById("layer").innerHTML=h;
+  if(S.modal)hidratarAnexos();
+}
+let toastT;function toast(texto,tipo="ok"){S.toast={texto,tipo};renderLayer();clearTimeout(toastT);toastT=setTimeout(()=>{S.toast=null;renderLayer()},4200)}
+function abrirModal(m){S.modal=m;renderLayer()}
+function fecharModal(){S.modal=null;renderLayer()}
+function confirmar(titulo,texto,rotulo,acao,perigo){abrirModal({titulo,html:`<p class="muted">${esc(texto)}</p>`,botoes:[{rotulo:"Voltar",classe:"ghost",acao:fecharModal},{rotulo,classe:perigo?"danger":"primary",acao}]})}
+
+/* ================= CLIENTE ================= */
+function arte(){return`<svg viewBox="0 0 480 420" class="art" role="img" aria-label="Ilustração de um profissional da ResolveJá com caixa de ferramentas"><circle cx="250" cy="215" r="190" fill="#e4efec"/><circle cx="402" cy="78" r="34" fill="#fdf3cf"/><ellipse cx="250" cy="392" rx="200" ry="14" fill="#cfdcd8"/><rect x="44" y="272" width="214" height="114" rx="8" fill="#fff" stroke="#c9d6d2" stroke-width="2"/><line x1="151" y1="282" x2="151" y2="376" stroke="#c9d6d2" stroke-width="2"/><rect x="34" y="258" width="234" height="18" rx="5" fill="#0f4c45"/><path d="M150 258V214q0-16-16-16h-16" fill="none" stroke="#8fa19c" stroke-width="9" stroke-linecap="round"/><path d="M118 210q-6 10 0 14q6-4 0-14z" fill="#4c9be0"/><path d="M118 232q-5 8 0 11q5-3 0-11z" fill="#4c9be0" opacity=".75"/><rect x="306" y="298" width="24" height="84" rx="10" fill="#24433f"/><rect x="336" y="298" width="24" height="84" rx="10" fill="#24433f"/><ellipse cx="316" cy="384" rx="20" ry="8" fill="#13201e"/><ellipse cx="350" cy="384" rx="20" ry="8" fill="#13201e"/><rect x="292" y="196" width="82" height="118" rx="30" fill="#0f4c45"/><rect x="309" y="238" width="48" height="64" rx="8" fill="#f2b705"/><path d="M313 240l-8-36M353 240l8-36" stroke="#f2b705" stroke-width="7" stroke-linecap="round"/><path d="M300 214q-30 18-44 38" fill="none" stroke="#0f4c45" stroke-width="20" stroke-linecap="round"/><circle cx="254" cy="254" r="11" fill="#b9785a"/><path d="M366 214q14 34 18 72" fill="none" stroke="#0f4c45" stroke-width="20" stroke-linecap="round"/><circle cx="384" cy="292" r="11" fill="#b9785a"/><rect x="358" y="298" width="62" height="40" rx="6" fill="#f2b705" stroke="#c99400" stroke-width="3"/><rect x="322" y="180" width="22" height="22" rx="6" fill="#a8694d"/><circle cx="333" cy="158" r="31" fill="#b9785a"/><path d="M302 154q2-34 31-34t31 34z" fill="#0f4c45"/><path d="M330 152h44q6 0 2 6h-46z" fill="#0a3530"/><circle cx="326" cy="164" r="3.4" fill="#13201e"/><circle cx="346" cy="164" r="3.4" fill="#13201e"/><path d="M325 176q11 9 22 0" fill="none" stroke="#13201e" stroke-width="3" stroke-linecap="round"/></svg>`}
+const novoForm=()=>({nome:"",telefone:"",email:"",bairro:"",endereco:"",descricao:"",preferencia:"qualquer",aceite:false,anexos:[]});
+S.form=novoForm();
+function vCliente(){
+  const nf=filaAguardando().length,tm=tempoMedioAtend();
+  if(S.cliente.ultimo){const f=D.fila.find(x=>x.id===S.cliente.ultimo);const pos=filaAguardando().findIndex(x=>x.id===S.cliente.ultimo)+1;
+    return`<section class="card stack" style="max-width:640px;margin:0 auto;text-align:center;align-items:center">
+      <span class="tag f-saida">Pedido recebido</span><p class="muted">Seu protocolo</p><div class="protocolo">${esc(f.id)}</div>
+      ${pos?`<p style="font-size:1.1rem">Você é o <b>${pos}º</b> da fila. Retorno estimado em <b>${fmtDur(pos*tm)}</b>.</p>`:`<p>${chip(f.status,FILAST)}</p>`}
+      <p class="muted small">Um atendente vai chamar você pelo ${esc(fmtTel(f.telefone))} (WhatsApp ou ligação) para confirmar o horário, o profissional e o valor. Guarde o protocolo para consultar o andamento.</p>
+      <div class="row" style="justify-content:center"><a class="btn primary" href="#cliente-consulta" data-action="prepConsulta" data-id="${esc(f.id)}">Consultar andamento</a><button class="btn ghost" data-action="novoPedidoCliente">Enviar outro pedido</button></div></section>`}
+  const f=S.form;
+  const bai=`<option value="">Selecione</option>`+REGIOES.map(r=>`<optgroup label="${r}">${BAIRROS[r].map(b=>`<option ${b===f.bairro?"selected":""}>${b}</option>`).join("")}</optgroup>`).join("");
+  return`<section class="cli">
+    <div class="cli-txt">
+      <span class="pill"><span class="dot"></span>${nf?`${nf} ${nf===1?"pessoa":"pessoas"} na fila · retorno médio em ${fmtDur(tm)}`:"Atendentes disponíveis agora"}</span>
+      <h1>Conte o problema. A gente retorna e resolve.</h1>
+      <p class="lead">Adiante seu atendimento em 1 minuto. Você entra na fila, e um atendente da ResolveJá chama você no WhatsApp ou por telefone para agendar o profissional.</p>
+      <ol class="passos"><li><span class="n">1</span><div><b>Preencha o formulário</b><p class="muted small">Se puder, mande uma foto do problema.</p></div></li><li><span class="n">2</span><div><b>Aguarde o retorno</b><p class="muted small">Você recebe um protocolo e vê sua posição na fila.</p></div></li><li><span class="n">3</span><div><b>Confirme com o atendente</b><p class="muted small">Ele indica o profissional, o horário e o valor, e você recebe a confirmação.</p></div></li></ol>
+      ${arte()}
+      <p class="small muted">Prefere falar direto? Ligue ou chame no WhatsApp: (81) 4000-0000 (número fictício).</p>
+    </div>
+    <form class="card stack" data-form="enviarFila" novalidate>
+      <h2>Pedir atendimento</h2>
+      <div class="fgrid">
+        <label class="f full" for="c-nome">Nome completo<input id="c-nome" data-bind="form.nome" value="${esc(f.nome)}" autocomplete="name"></label>
+        <label class="f" for="c-tel">Telefone com DDD (WhatsApp)<input id="c-tel" data-bind="form.telefone" value="${esc(f.telefone)}" inputmode="tel" placeholder="(81) 99999-0000"></label>
+        <label class="f" for="c-email">E-mail <span class="hint">(opcional, para receber a confirmação)</span><input id="c-email" type="email" data-bind="form.email" value="${esc(f.email)}" autocomplete="email"></label>
+        <label class="f" for="c-bairro">Bairro (Recife)<select id="c-bairro" data-bind="form.bairro">${bai}</select></label>
+        <label class="f" for="c-pref">Melhor horário para o serviço<select id="c-pref" data-bind="form.preferencia">${Object.entries(PREF).map(([k,n])=>`<option value="${k}" ${k===f.preferencia?"selected":""}>${n}</option>`).join("")}</select></label>
+        <label class="f full" for="c-end">Endereço<input id="c-end" data-bind="form.endereco" value="${esc(f.endereco)}" placeholder="Rua, número e complemento" autocomplete="street-address"></label>
+        <label class="f full" for="c-desc">O que está acontecendo?<textarea id="c-desc" data-bind="form.descricao" placeholder="Ex.: a torneira da cozinha está vazando sem parar">${esc(f.descricao)}</textarea></label>
+        <div class="f full"><span>Foto ou PDF do problema <span class="hint">(opcional)</span></span>${htmlAnexosForm()}</div>
+        <label class="full row small" style="align-items:flex-start;flex-wrap:nowrap"><input type="checkbox" data-bind="form.aceite" data-type="check" ${f.aceite?"checked":""} style="margin-top:4px"><span>Autorizo a ResolveJá a usar meus dados só para este atendimento e a entrar em contato pelo telefone informado.</span></label>
+      </div>
+      ${S.formErro?`<ul class="erros">${S.formErro.map(e=>`<li>${esc(e)}</li>`).join("")}</ul>`:""}
+      <button class="btn accent lg" type="submit" ${S.enviando?"disabled":""}>${S.enviando?'<span class="spin"></span> Enviando…':"Entrar na fila de atendimento"}</button>
+    </form></section>`;
+}
+function htmlAnexosForm(){
+  const lista=S.form.anexos;
+  return`<div class="anexos">${lista.map((a,i)=>`<div class="ax">${a.tipo==="application/pdf"?`<span class="pdf">PDF</span>`:`<img src="${a.dataURL}" alt="${esc(a.nome)}">`}<small>${esc(a.nome)}</small></div>`).join("")}
+    ${lista.length<3?`<label class="addax">+ Adicionar<input type="file" accept="image/*,application/pdf" multiple data-upload="form"></label>`:""}${lista.length?`<button type="button" class="btn ghost sm" data-action="limparFotosForm">Remover anexos</button>`:""}</div>`;
+}
+async function enviarFila(){
+  const f=S.form,e=[];
+  if(f.nome.trim().length<3)e.push("Informe seu nome.");
+  if(digitos(f.telefone).length<10)e.push("Informe o telefone com DDD.");
+  if(f.email&&!/^\S+@\S+\.\S+$/.test(f.email))e.push("O e-mail parece incompleto.");
+  if(!f.bairro)e.push("Escolha o bairro.");
+  if(f.endereco.trim().length<5)e.push("Informe o endereço.");
+  if(f.descricao.trim().length<10)e.push("Descreva o problema com um pouco mais de detalhe.");
+  if(!f.aceite)e.push("Marque a autorização de uso dos dados.");
+  if(e.length){S.formErro=e;render();return}
+  S.formErro=null;S.enviando=true;render();
+  const id="F-"+String(++D.seq.fila).padStart(4,"0");
+  const ids=[];
+  for(const a of f.anexos){const axId="AX-"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);await ANEXOS.put(axId,a.dataURL);D.anexos.push({id:axId,nome:a.nome,tipo:a.tipo,tam:Math.round(a.dataURL.length*.75),ref:{tipo:"fila",id},criadoEm:agoraISO()});ids.push(axId)}
+  D.fila.push({id,criadoEm:agoraISO(),nome:f.nome.trim(),telefone:digitos(f.telefone),email:f.email.trim(),bairro:f.bairro,endereco:f.endereco.trim(),descricao:f.descricao.trim(),preferencia:f.preferencia,anexos:ids,status:"aguardando",tentativas:0,seed:false});
+  salvar();S.enviando=false;S.cliente.ultimo=id;S.form=novoForm();render();window.scrollTo(0,0);
+}
+function vConsulta(){
+  const c=S.cliente.consulta,r=S.cliente.resultado;
+  let res="";
+  if(r&&r.erro)res=`<div class="notice bad">${esc(r.erro)}</div>`;
+  else if(r&&r.fila){const f=D.fila.find(x=>x.id===r.fila);const pos=filaAguardando().findIndex(x=>x.id===f.id)+1;const t=f.transacaoId&&D.transacoes.find(x=>x.codigo===f.transacaoId);
+    res=`<div class="card stack"><div class="row between"><h2 class="num">${esc(f.id)}</h2>${chip(f.status,FILAST)}</div>
+      ${f.status==="aguardando"?`<p>Você é o <b>${pos}º</b> da fila. Retorno estimado em <b>${fmtDur(pos*tempoMedioAtend())}</b>.</p>`:""}
+      ${f.status==="em_atendimento"?`<p>Um atendente está cuidando do seu pedido agora. Fique de olho no telefone ${esc(fmtTel(f.telefone))}.</p>`:""}
+      ${f.status==="encerrada"?`<p>Atendimento encerrado: ${esc(f.motivo||"")}.</p>`:""}
+      ${t?`<p>Seu atendimento virou o pedido <b>${esc(t.codigo)}</b>. <button class="btn ghost sm" data-action="verPedidoCliente" data-id="${esc(t.codigo)}">Ver pedido</button></p>`:""}
+      <p class="muted small">Enviado em ${fmtDH(f.criadoEm)} · ${esc(f.descricao)}</p></div>`}
+  else if(r&&r.codigo){const t=D.transacoes.find(x=>x.codigo===r.codigo);res=pedidoCliente(t)}
+  return`<div class="pagehead"><div><h1>Consultar meu pedido</h1><p>Use o protocolo do formulário (F-0000) ou o código do pedido (RJ-000000), junto com o telefone informado.</p></div></div>
+    <form class="card row" data-form="consultar" style="align-items:flex-end">
+      <label class="f" for="q-cod" style="flex:1;min-width:180px">Protocolo ou código<input id="q-cod" data-bind="cliente.consulta.codigo" value="${esc(c.codigo)}" placeholder="F-0001 ou RJ-000000" autocapitalize="characters"></label>
+      <label class="f" for="q-tel" style="flex:1;min-width:180px">Telefone<input id="q-tel" data-bind="cliente.consulta.telefone" value="${esc(c.telefone)}" inputmode="tel" placeholder="(81) 99999-0000"></label>
+      <button class="btn primary" type="submit">Consultar</button></form>${res}`;
+}
+function consultar(){
+  const cod=S.cliente.consulta.codigo.trim().toUpperCase().replace(/\s/g,""),tel=digitos(S.cliente.consulta.telefone);
+  S.cliente.nota=0;S.cliente.comentario="";
+  if(/^F-?\d{1,4}$/.test(cod)){const id="F-"+cod.replace(/\D/g,"").padStart(4,"0");const f=D.fila.find(x=>x.id===id);S.cliente.resultado=f&&digitos(f.telefone)===tel?{fila:id}:{erro:"Não encontramos esse protocolo com esse telefone. Confira os dois e tente de novo."}}
+  else if(/^RJ-?\d{6}$/.test(cod)){const c="RJ-"+cod.replace(/\D/g,"");const t=D.transacoes.find(x=>x.codigo===c);S.cliente.resultado=t&&digitos(t.telefone)===tel?{codigo:c}:{erro:"Não encontramos esse pedido com esse telefone. Confira os dois e tente de novo."}}
+  else S.cliente.resultado={erro:"Use o formato F-0001 (protocolo) ou RJ-000000 (pedido)."};
+  render();
+}
+function pedidoCliente(t){
+  const passos=[["Pedido confirmado",true],["Profissional confirmou",situacaoOrdem(t)==="confirmada"||t.status==="concluido"],["Pago",t.pagamentoStatus==="pago"],["Serviço concluído",t.status==="concluido"],["Avaliado",!!t.avaliacao]];
+  const n=S.cliente.nota;
+  return`<div class="card stack"><div class="row between"><div class="row"><h2 class="num">${esc(t.codigo)}</h2>${chip(t.status)}</div><span class="muted small">Criado em ${fmtDH(t.criadoEm)}</span></div>
+    ${t.status==="cancelado"?`<p class="notice bad">Pedido cancelado em ${fmtDH(t.canceladoEm)}.${t.pagamentoStatus==="estornado"?" Estorno simulado registrado.":""}</p>`:`<ol class="track">${passos.map(([a,ok])=>`<li class="${ok?"ok":""}">${ok?"✓ ":""}${a}</li>`).join("")}</ol>`}
+    ${(()=>{const p=D.profs.find(x=>x.id===t.profissionalId);if(!p)return"";const n=notaProf(p);return`<div class="meu-prof">${avatar(p,64)}<div style="flex:1"><span class="muted small">${t.status==="concluido"?"Quem atendeu você":t.status==="cancelado"?"Profissional que estava agendado":"Quem vai atender você"}</span><div><b style="font-size:1.1rem">${esc(p.nome)}</b></div><div class="small">${n.total?`${estrelas(n.media)} ${n.media.toFixed(1).replace(".",",")} (${n.total} avaliações)`:notaHTML(n)} · ${p.experiencia} anos de experiência · ${esc(ESPEC[p.especialidade])}</div></div><button class="btn ghost sm" data-action="verPerfil" data-id="${esc(p.id)}" data-modo="cliente">Ver perfil</button></div>`})()}
+    <div class="det"><div><div class="k">Serviço</div><div class="v">${esc(ESPEC[t.servico])}</div></div><div><div class="k">Quando</div><div class="v">${fmtData(t.data)} às ${esc(t.horario)}</div></div><div><div class="k">Endereço</div><div class="v">${esc(t.endereco)}</div></div></div>
+    ${documento(t)}
+    ${t.status==="concluido"&&!t.avaliacao?`<div class="card stack"><h3>Como foi o atendimento de ${esc(t.profissionalNome)}?</h3><div class="stars" role="group" aria-label="Nota de 1 a 5">${[1,2,3,4,5].map(i=>`<button type="button" class="${i<=n?"on":""}" data-action="notaCliente" data-v="${i}" aria-label="${i} estrela${i>1?"s":""}">★</button>`).join("")}</div>
+      <label class="f" for="q-com">Comentário (opcional)<textarea id="q-com" data-bind="cliente.comentario" style="min-height:64px">${esc(S.cliente.comentario)}</textarea></label><div><button class="btn primary" data-action="avaliarCliente" data-id="${esc(t.codigo)}" ${n?"":"disabled"}>Enviar avaliação</button></div></div>`:""}
+    ${t.avaliacao?`<p>Sua avaliação: ${estrelas(t.avaliacao.nota)} ${t.avaliacao.comentario?`“${esc(t.avaliacao.comentario)}”`:""}</p>`:""}</div>`;
+}
+
+/* ---------- Documento (comprovante / recibo) ---------- */
+function documento(t){
+  const v=t.valores;let titulo,nota;
+  if(t.status==="concluido"){titulo="Recibo";nota="Serviço concluído e pago."}
+  else if(t.status==="cancelado"){titulo="Comprovante de cancelamento";nota=t.pagamentoStatus==="estornado"?"Estorno simulado registrado.":"Nenhum valor foi cobrado."}
+  else if(t.pagamentoStatus==="pago"){titulo="Comprovante de pagamento";nota=`Pagamento simulado via ${PAG[t.pagamento]} aprovado. O recibo é emitido na conclusão.`}
+  else{titulo="Confirmação de agendamento";nota="Pagamento em dinheiro, feito ao profissional na conclusão."}
+  return`<div class="doc stack"><div class="row between"><b>${titulo}</b><span class="num">${esc(t.codigo)}</span></div>
+    <table class="calc"><tbody><tr><td>Cliente</td><td class="v">${esc(t.clienteNome)}</td></tr><tr><td>Serviço${v.adicionalUrgencia?" + urgência (20%)":""}</td><td class="v">${brl(v.subtotal)}</td></tr><tr><td>Taxa da plataforma (10%)</td><td class="v">${brl(v.taxaPlataforma)}</td></tr>${v.descontoPix?`<tr class="neg"><td>Desconto Pix (5%)</td><td class="v">− ${brl(v.descontoPix)}</td></tr>`:""}<tr class="tot"><td>Total · ${esc(PAG[t.pagamento])}</td><td class="v">${brl(v.total)}</td></tr></tbody></table>
+    <p class="small muted">${esc(nota)} Documento de simulação, sem valor fiscal.</p></div>`;
+}
+
+/* ================= CENTRAL ================= */
+function vCentral(){
+  const fila=filaAguardando(),a=D.atendimentoAberto;
+  const hoje=D.atendimentos.filter(x=>x.fim&&isoDia(new Date(x.fim))===hojeISO());
+  const pedHoje=hoje.filter(x=>x.resultado==="pedido").length;
+  return`<div class="pagehead"><div><h1>Fila e atendimento</h1><p>O atendente chama o próximo da fila (quem pediu pelo formulário) ou registra uma ligação ou mensagem de WhatsApp. O cronômetro mede cada atendimento.</p></div></div>
+  ${a?`<div class="emcurso"><div><b>Atendimento ${esc(a.id)} em andamento</b> · ${esc(CANAL[a.canal])}${a.cliente.nome?` · ${esc(a.cliente.nome)}`:""} · <span class="num" data-desde="${esc(a.inicio)}">${relogio((Date.now()-new Date(a.inicio))/1000)}</span></div><a class="btn primary" href="#central-atendimento">Voltar ao atendimento</a></div>`:""}
+  ${(()=>{const L=avisosPendentes();return L.length?`<section class="card stack"><div class="row between"><h2>Avisos pendentes <span class="badge">${L.length}</span></h2><span class="muted small">Mensagens prontas esperando o envio</span></div><ul class="alertas">${L.slice(0,6).map(a=>`<li class="${a.alta?"alta":""}"><span class="chip ${a.alta?"st-cancelado":"st-agendado"}">${a.alta?"Urgente":"Enviar"}</span><div><b>${esc(a.t)}</b><p class="muted small">${esc(a.d)}</p></div><a class="btn ghost sm" href="#central-${esc(a.id)}">Abrir</a></li>`).join("")}</ul>${L.length>6?`<p class="muted small">E mais ${L.length-6} em Pedidos.</p>`:""}</section>`:""})()}
+  <div class="central">
+    <section class="card stack"><div class="row between"><h2>Fila de espera <span class="muted small" style="font-family:var(--body);font-weight:600">(${fila.length})</span></h2><button class="btn primary" data-action="chamarProximo" ${fila.length&&!a?"":"disabled"}>Chamar próximo</button></div>
+      ${fila.length?`<ol class="fila">${fila.map((f,i)=>{const esp=(Date.now()-new Date(f.criadoEm))/1000;return`<li class="${i===0?"prox":""}"><span class="pos">${i+1}º</span><div><div class="row"><b>${esc(f.nome)}</b><span class="muted small">${esc(f.id)} · ${esc(local(f.bairro))}${f.tentativas?` · ${f.tentativas}ª nova tentativa`:""}</span></div><p class="small">${esc(f.descricao.length>110?f.descricao.slice(0,110)+"…":f.descricao)}</p><p class="muted small">${esc(PREF[f.preferencia]||"")}${f.anexos.length?` · ${f.anexos.length} anexo(s)`:""}</p></div><div style="text-align:right"><div class="muted small">espera</div><div class="espera ${esp>900?"alta":""}" data-desde="${esc(f.criadoEm)}">${relogio(esp)}</div><button class="btn ghost sm" data-action="atenderFila" data-id="${esc(f.id)}" ${a?"disabled":""} style="margin-top:6px">Atender</button></div></li>`}).join("")}</ol>`:`<p class="notice ok">Fila vazia. Novos pedidos do formulário aparecem aqui na hora.</p>`}
+      ${a?`<p class="muted small">Termine o atendimento em andamento para chamar o próximo.</p>`:""}</section>
+    <div class="stack">
+      <section class="card stack"><h2>Novo atendimento</h2><p class="muted small">Cliente ligou ou mandou mensagem? Registre aqui para o contato entrar no monitoramento.</p>
+        <div class="canais"><button class="canal-btn" data-action="novoAtendimento" data-v="ligacao" ${a?"disabled":""}><b>Ligação recebida</b><span class="muted small">Começa o cronômetro</span></button><button class="canal-btn" data-action="novoAtendimento" data-v="whatsapp" ${a?"disabled":""}><b>Mensagem no WhatsApp</b><span class="muted small">Começa o cronômetro</span></button></div></section>
+      <section class="card stack"><h3>Hoje na central</h3><div class="kpis" style="grid-template-columns:repeat(3,1fr)"><div class="kpi"><span>Contatos</span><b>${hoje.length}</b></div><div class="kpi"><span>Viraram pedido</span><b>${pedHoje}</b></div><div class="kpi"><span>Tempo médio</span><b style="font-size:1.15rem">${hoje.length?fmtDur(media(hoje.map(x=>x.duracaoSeg))):"—"}</b></div></div><a href="#gerente-chamadas" class="small">Ver monitoramento completo</a></section>
+    </div></div>`;
+}
+function abrirAtendimento(canal,filaItem){
+  const id="AT-"+String(++D.seq.at).padStart(4,"0");
+  D.atendimentoAberto={id,canal,inicio:agoraISO(),filaId:filaItem?filaItem.id:null,esperaSeg:filaItem?Math.round((Date.now()-new Date(filaItem.criadoEm))/1000):null,
+    cliente:filaItem?{nome:filaItem.nome,telefone:fmtTel(filaItem.telefone),email:filaItem.email,bairro:filaItem.bairro,endereco:filaItem.endereco}:{nome:"",telefone:"",email:"",bairro:"",endereco:""},
+    descricao:filaItem?filaItem.descricao:"",preferencia:filaItem?filaItem.preferencia:"",anexos:filaItem?[...filaItem.anexos]:[],servico:"",urgencia:"",horas:1,data:"",horario:"",profId:null,pagamento:"pix",erros:null};
+  if(filaItem){filaItem.status="em_atendimento";filaItem.chamadoEm=agoraISO();filaItem.atendimentoId=id}
+  salvar();ir("central-atendimento");
+}
+function profsLivres(a){
+  if(!a.servico||!a.data||!a.horario)return{lista:[],ocupados:0};
+  const ini=minDe(a.horario),fim=ini+Math.round(a.horas*60);const z=regiaoDe(a.cliente.bairro);
+  const daEsp=D.profs.filter(p=>p.especialidade===a.servico);
+  const lista=daEsp.filter(p=>p.disponivel&&!sobrepoe(p.id,a.data,ini,fim)).map(p=>{const n=notaProf(p);return{...p,nota:n.media,nAval:n.total,mesmaZona:p.regiao===z,estimado:calcular(p,a.horas,a.urgencia||"media","credito").bruto}})
+    .sort((x,y)=>(y.mesmaZona-x.mesmaZona)||(y.nota-x.nota)||(y.nAval-x.nAval)||(y.experiencia-x.experiencia)||(x.estimado-y.estimado));
+  return{lista,ocupados:daEsp.filter(p=>p.disponivel).length-lista.length,fim};
+}
+function vAtendimento(){
+  const a=D.atendimentoAberto;
+  if(!a)return`<div class="card stack"><h2>Nenhum atendimento em andamento</h2><p class="muted">Chame o próximo da fila ou registre uma ligação ou mensagem.</p><div><a class="btn primary" href="#central">Ir para a fila</a></div></div>`;
+  const c=a.cliente;const z=regiaoDe(c.bairro);
+  const bai=`<option value="">Selecione</option>`+REGIOES.map(r=>`<optgroup label="${r}">${BAIRROS[r].map(b=>`<option ${b===c.bairro?"selected":""}>${b}</option>`).join("")}</optgroup>`).join("");
+  const hs=`<option value="">Selecione</option>`+HORARIOS.map(h=>{const p=a.data&&horaPassou(a.data,h);return`<option ${h===a.horario?"selected":""} ${p?"disabled":""}>${h}${p?" (já passou)":""}</option>`}).join("");
+  const{lista,ocupados,fim}=profsLivres(a);const fora=a.horario&&fim>FIM_EXPEDIENTE;
+  const prof=D.profs.find(p=>p.id===a.profId);const v=prof&&a.urgencia?calcular(prof,a.horas,a.urgencia,a.pagamento):null;
+  const pronto3=a.servico&&a.urgencia&&a.data&&a.data>=hojeISO()&&a.horario;
+  return`<div class="pagehead"><div><h1>Atendimento ${esc(a.id)}</h1><p>${esc(CANAL[a.canal])}${a.filaId?` · formulário ${esc(a.filaId)}, esperou ${fmtDur(a.esperaSeg)} na fila`:""}. Preencha de cima para baixo; o resumo ao lado mostra o que falta.</p></div></div>
+  <div class="at"><div class="stack">
+    <section class="card sec"><div class="sec-t"><span class="n">1</span><h3>Cliente</h3></div>
+      <div class="fgrid">
+        <label class="f" for="a-nome">Nome<input id="a-nome" data-bind="at.cliente.nome" value="${esc(c.nome)}"></label>
+        <label class="f" for="a-tel">Telefone (WhatsApp)<input id="a-tel" data-bind="at.cliente.telefone" value="${esc(c.telefone)}" inputmode="tel"></label>
+        <label class="f" for="a-email">E-mail <span class="hint">(opcional)</span><input id="a-email" data-bind="at.cliente.email" value="${esc(c.email)}"></label>
+        <label class="f" for="a-bairro">Bairro<select id="a-bairro" data-bind="at.cliente.bairro" data-rerender="1">${bai}</select><span class="hint">${z?`Zona: ${z}`:""}</span></label>
+        <label class="f full" for="a-end">Endereço<input id="a-end" data-bind="at.cliente.endereco" value="${esc(c.endereco)}"></label>
+      </div>
+      ${D.clientes.find(k=>k.id===digitos(c.telefone))?`<p class="notice info small">Cliente já cadastrado: ${D.transacoes.filter(t=>t.clienteId===digitos(c.telefone)).length} pedido(s) anteriores.</p>`:""}</section>
+    <section class="card sec"><div class="sec-t"><span class="n">2</span><h3>Problema e triagem</h3></div>
+      <label class="f" for="a-desc">O que o cliente relatou<textarea id="a-desc" data-bind="at.descricao">${esc(a.descricao)}</textarea></label>
+      ${a.preferencia?`<p class="muted small">Preferência informada no formulário: ${esc(PREF[a.preferencia]||a.preferencia)}.</p>`:""}
+      <details class="guia-box" ${a.servico?"":"open"}><summary>Guia de triagem: clique em uma linha para preencher</summary>
+        <table class="guia"><thead><tr><th>Situação relatada</th><th>Especialidade</th><th>Urgência</th><th>Horas</th></tr></thead><tbody>${GUIA.map(([s,e,u,h],i)=>`<tr style="cursor:pointer" data-action="usarGuia" data-i="${i}"><td>${esc(s)}</td><td>${ESPEC[e]}</td><td>${URG[u]}</td><td>${fmtH(h)}</td></tr>`).join("")}</tbody></table>
+        <p class="small muted" style="margin-top:8px"><b>Urgência:</b> alta = risco à segurança ou dano contínuo (água jorrando, faísca, cheiro de queimado); média = atrapalha o uso da casa; baixa = pode esperar. <b>Cheiro de gás:</b> oriente o cliente a sair do local, não acionar interruptores e ligar para o Corpo de Bombeiros (193).</p></details>
+      <div class="fgrid">
+        <label class="f" for="a-serv">Especialidade<select id="a-serv" data-bind="at.servico" data-rerender="1"><option value="">Selecione</option>${Object.entries(ESPEC).map(([k,n])=>`<option value="${k}" ${k===a.servico?"selected":""}>${n}</option>`).join("")}</select></label>
+        <label class="f" for="a-horas">Horas estimadas<input id="a-horas" type="number" min="0.5" max="8" step="0.5" data-bind="at.horas" data-type="num" data-rerender="1" value="${a.horas}"></label>
+        <div class="f full"><span>Urgência</span><div class="seg" role="group" aria-label="Urgência">${Object.entries(URG).map(([k,n])=>`<button type="button" class="${k===a.urgencia?"on":""}" data-action="urgencia" data-v="${k}" aria-pressed="${k===a.urgencia}">${n}</button>`).join("")}</div><span class="hint">Urgência alta acrescenta 20% ao valor do serviço.</span></div>
+      </div>
+      <div class="f"><span>Anexos do cliente</span>${htmlAnexos(a.anexos,"atendimento")}</div></section>
+    <section class="card sec"><div class="sec-t"><span class="n">3</span><h3>Agendamento</h3></div>
+      <div class="f"><span>Data do serviço</span><div class="dias">${Array.from({length:8},(_,i)=>{const d=somaDias(i);const sem=!HORARIOS.some(h=>!horaPassou(d,h));const dt=new Date(d+"T12:00:00");return`<button type="button" class="dia ${a.data===d?"on":""}" data-action="escolherData" data-v="${d}" ${sem?"disabled":""} aria-pressed="${a.data===d}"><b>${i===0?"Hoje":i===1?"Amanhã":["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][dt.getDay()]}</b><span>${fmtData(d).slice(0,5)}</span></button>`}).join("")}</div></div>
+      <div class="fgrid"><label class="f" for="a-data">Outra data<input id="a-data" type="date" min="${hojeISO()}" data-bind="at.data" data-agendar="1" value="${esc(a.data)}"></label><label class="f" for="a-hora">Horário<select id="a-hora" data-bind="at.horario" data-rerender="1">${hs}</select></label></div>
+      <p id="aviso-data" class="notice bad small" ${a.data&&a.data<hojeISO()?"":"hidden"}>${a.data&&a.data<hojeISO()?`A data ${fmtData(a.data)} já passou. Escolha hoje ou uma data futura.`:""}</p>
+      ${!pronto3?`<p class="muted small">Escolha especialidade, urgência, data e horário para ver quem está livre.</p>`:fora?`<p class="notice warn">Começando às ${esc(a.horario)}, um serviço de ${fmtH(a.horas)} termina às ${hmDe(fim)}. O atendimento vai até as 20:00: escolha um horário mais cedo.</p>`:
+        lista.length?`<p class="small"><b>${lista.length} profissional(is) livre(s)</b> · quem atende a ${esc(z||"zona do cliente")} aparece primeiro, depois os mais bem avaliados.${ocupados?` ${ocupados} ocupado(s) nesse horário.`:""}</p><div class="stack">${lista.map(p=>`<div class="pro ${a.profId===p.id?"sel":""}"><div class="prof-mini">${avatar(p,48)}<div><div class="row"><button type="button" class="linkbtn" data-action="verPerfil" data-id="${esc(p.id)}" data-modo="central">${esc(p.nome)}</button>${p.mesmaZona?`<span class="chip st-concluido">Mesma zona</span>`:""}<span class="tag f-entrada">${esc(local(p.bairro,p.regiao))}</span></div><div class="meta"><span>${notaHTML({media:p.nota,total:p.nAval})}</span><span>${p.experiencia} anos</span><span>Base ${brl(p.precoBase)} + ${brl(p.precoHora)}/h</span></div></div></div><div style="text-align:right"><div class="muted small">estimado</div><b class="num">${brl(p.estimado)}</b><br><button class="btn ${a.profId===p.id?"primary":"ghost"} sm" data-action="escolherProf" data-id="${esc(p.id)}" style="margin-top:4px">${a.profId===p.id?"Escolhido":"Escolher"}</button></div></div>`).join("")}</div>`
+        :`<p class="notice warn">Nenhum ${esc(ESPEC[a.servico].toLowerCase())} livre nesse horário. Tente outro horário ou outra data.</p>`}</section>
+    <section class="card sec"><div class="sec-t"><span class="n">4</span><h3>Pagamento</h3></div>
+      <div class="pay-opts">${Object.entries(PAG).map(([k,n])=>`<button type="button" class="pay-opt ${a.pagamento===k?"on":""}" data-action="pagamento" data-v="${k}" aria-pressed="${a.pagamento===k}"><b>${n}</b><span>${k==="pix"?"5% de desconto":k==="dinheiro"?"pago na conclusão":"aprovado na hora"}</span></button>`).join("")}</div>
+      ${v?`<table class="calc"><tbody><tr><td>Preço base</td><td class="v">${brl(v.precoBase)}</td></tr><tr><td>${fmtH(v.horas)} × ${brl(v.precoHora)}/h</td><td class="v">${brl(r2(v.precoHora*v.horas))}</td></tr><tr><td><b>Valor do serviço</b></td><td class="v">${brl(v.servicoBase)}</td></tr><tr><td>Adicional de urgência alta (20%)</td><td class="v">${v.adicionalUrgencia?brl(v.adicionalUrgencia):"—"}</td></tr><tr><td>Taxa da plataforma (10%)</td><td class="v">${brl(v.taxaPlataforma)}</td></tr><tr class="neg"><td>Desconto Pix (5% sobre ${brl(v.bruto)})</td><td class="v">${v.descontoPix?"− "+brl(v.descontoPix):"—"}</td></tr><tr class="tot"><td>Total</td><td class="v">${brl(v.total)}</td></tr></tbody></table>`:`<p class="muted small">O cálculo aparece quando o profissional e a urgência estão escolhidos.</p>`}
+      <p class="notice warn small">Pagamento simulado: nenhum valor real é cobrado.</p></section>
+  </div>
+  <aside class="aside">
+    <div class="card stack"><span class="muted small">Duração do atendimento</span><div class="cron" data-desde="${esc(a.inicio)}">${relogio((Date.now()-new Date(a.inicio))/1000)}</div><span class="muted small">Iniciado às ${fmtHora(a.inicio)} · ${esc(CANAL[a.canal])}</span></div>
+    <div class="card stack"><h3>Resumo</h3>
+      ${[["Cliente",c.nome],["Local",local(c.bairro)],["Serviço",a.servico?`${ESPEC[a.servico]}${a.urgencia?` · ${URG[a.urgencia]}`:""} · ${fmtH(a.horas)}`:""],["Quando",a.data&&a.horario?`${fmtData(a.data)} às ${a.horario}`:""],["Profissional",prof?prof.nome:""],["Total",v?`${brl(v.total)} (${PAG[a.pagamento]})`:""]].map(([k,x])=>`<div class="row between small"><span class="muted">${k}</span><b style="text-align:right">${x?esc(x):"<span class='muted'>—</span>"}</b></div>`).join("")}
+      ${a.erros?`<p class="small" style="color:var(--bad);font-weight:700">Falta resolver:</p><ul class="erros">${a.erros.map(e=>`<li>${esc(e)}</li>`).join("")}</ul>`:""}
+      <button class="btn accent" data-action="confirmarPedido">Confirmar pedido</button>
+      <button class="btn ghost" data-action="encerrarSemPedido">Encerrar sem pedido</button></div>
+  </aside></div>`;
+}
+function confirmarPedido(){
+  const a=D.atendimentoAberto,c=a.cliente,e=[];
+  if(c.nome.trim().length<3)e.push("Nome do cliente.");
+  if(digitos(c.telefone).length<10)e.push("Telefone com DDD.");
+  if(!c.bairro)e.push("Bairro.");
+  if(c.endereco.trim().length<5)e.push("Endereço.");
+  if(a.descricao.trim().length<5)e.push("Descrição do problema.");
+  if(!a.servico)e.push("Especialidade (triagem).");
+  if(!a.urgencia)e.push("Urgência (triagem).");
+  if(!a.data||!a.horario)e.push("Data e horário.");
+  else if(horaPassou(a.data,a.horario))e.push("O horário escolhido já passou.");
+  const ini=a.horario?minDe(a.horario):0,fim=ini+Math.round(a.horas*60);
+  if(a.horario&&fim>FIM_EXPEDIENTE)e.push("O serviço passaria das 20:00.");
+  const prof=D.profs.find(p=>p.id===a.profId);
+  if(!prof)e.push("Escolha o profissional.");
+  else if(!prof.disponivel||sobrepoe(prof.id,a.data,ini,fim))e.push("O profissional escolhido não está mais livre nesse horário.");
+  if(e.length){a.erros=e;salvar();render();toast("Confira os itens destacados no resumo.","bad");return}
+  const agora=agoraISO();const{cli,novo}=clienteUpsert(c);
+  const codigo=proximoCodigo();
+  const t=montarTransacao({codigo,cliente:cli,descricao:a.descricao.trim(),servico:a.servico,urgencia:a.urgencia,horas:a.horas,data:a.data,horario:a.horario,prof,pagamento:a.pagamento,canal:a.canal,atendimentoId:a.id,filaId:a.filaId,anexos:a.anexos,criadoEm:agora});
+  t.eventos.splice(1,0,{...ev("processamento",novo?"Novo cliente cadastrado.":"Cadastro do cliente atualizado.",agora),em:t.eventos[0].em});
+  for(const id of a.anexos){const ax=D.anexos.find(x=>x.id===id);if(ax&&ax.ref.tipo!=="transacao")ax.ref={tipo:"transacao",id:codigo}}
+  D.transacoes.push(t);
+  fecharAtendimento("pedido","",codigo);
+  render();
+  const dur=D.atendimentos.at(-1).duracaoSeg;const refazer=()=>`<p>O atendimento durou <b>${fmtDur(dur)}</b> e foi registrado no monitoramento. Agora avise o cliente e envie a ordem de serviço ao profissional.</p><div class="two">${caixaAviso("confirmacao",t,"Avisar o cliente: confirmação")}${caixaProf(t,true)}</div>`;
+  abrirModal({titulo:`Pedido ${codigo} criado`,wide:true,refazer,html:refazer(),botoes:[{rotulo:"Voltar à fila",classe:"ghost",acao:()=>{fecharModal();ir("central")}},{rotulo:"Abrir o pedido",acao:()=>{fecharModal();location.hash="central-"+codigo}}]});
+}
+function fecharAtendimento(resultado,motivo,transacaoId){
+  const a=D.atendimentoAberto;const fim=agoraISO();const dur=Math.round((Date.now()-new Date(a.inicio))/1000);
+  D.atendimentos.push({id:a.id,canal:a.canal,inicio:a.inicio,fim,duracaoSeg:dur,esperaSeg:a.esperaSeg,clienteNome:a.cliente.nome||"(sem nome)",telefone:digitos(a.cliente.telefone),resultado,motivo,transacaoId:transacaoId||null,filaId:a.filaId,seed:false});
+  if(a.filaId){const f=D.fila.find(x=>x.id===a.filaId);if(f){if(resultado==="pedido"){f.status="convertida";f.transacaoId=transacaoId;f.finalizadoEm=fim}else if(resultado==="retorno"){f.status="aguardando";f.tentativas=(f.tentativas||0)+1;f.criadoEm=fim}else{f.status="encerrada";f.motivo=motivo;f.finalizadoEm=fim}}}
+  D.atendimentoAberto=null;salvar();
+}
+function encerrarSemPedido(){
+  const a=D.atendimentoAberto;
+  abrirModal({titulo:`Encerrar ${a.id} sem pedido`,html:`<p class="muted">O contato fica registrado no monitoramento com o motivo escolhido.</p><div class="stack">${MOTIVOS.map((m,i)=>`<label class="row small" style="flex-wrap:nowrap"><input type="radio" name="motivo" value="${i}" ${i===0?"checked":""}> ${esc(m)}${i===4&&!a.filaId?" <span class='muted'>(só para quem veio da fila)</span>":""}</label>`).join("")}</div>`,
+    botoes:[{rotulo:"Voltar",classe:"ghost",acao:fecharModal},{rotulo:"Encerrar atendimento",classe:"danger",acao:()=>{const i=Number((document.querySelector("input[name=motivo]:checked")||{}).value||0);const ret=i===4&&a.filaId;fecharAtendimento(ret?"retorno":"sem_pedido",MOTIVOS[i]);fecharModal();toast(ret?"Cliente voltou para a fila.":"Atendimento encerrado e registrado.");location.hash="central"}}]});
+}
+function vPedidos(){
+  const q=S.pedidos.q.trim().toLowerCase(),st=S.pedidos.status;
+  const lista=[...D.transacoes].filter(t=>(!st||t.status===st)&&(!q||t.codigo.toLowerCase().includes(q)||t.clienteNome.toLowerCase().includes(q)||t.profissionalNome.toLowerCase().includes(q))).sort((a,b)=>a.criadoEm<b.criadoEm?1:-1);
+  const cont=k=>D.transacoes.filter(t=>t.status===k).length;
+  return`<div class="pagehead"><div><h1>Pedidos</h1><p>Todos os pedidos criados pela central. Abra um pedido para registrar a conclusão, o cancelamento, a avaliação, anexos e avisar o cliente.</p></div></div>
+    <div class="card filtros"><label class="f" for="p-q" style="flex:1">Buscar<input id="p-q" data-bind="pedidos.q" data-live="1" value="${esc(S.pedidos.q)}" placeholder="Código, cliente ou profissional"></label>
+      <div class="f"><span>Situação</span><div class="seg">${[["","Todos",D.transacoes.length],["agendado","Agendados",cont("agendado")],["pago","Pagos",cont("pago")],["concluido","Concluídos",cont("concluido")],["cancelado","Cancelados",cont("cancelado")]].map(([k,n,c])=>`<button type="button" class="${st===k?"on":""}" data-action="filtroStatus" data-v="${k}">${n} (${c})</button>`).join("")}</div></div></div>
+    <div id="tabela">${tabelaPedidos(lista)}</div>`;
+}
+function tabelaPedidos(lista){
+  if(!lista.length)return`<div class="card muted">Nenhum pedido encontrado.</div>`;
+  return`<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Código</th><th>Serviço em</th><th>Cliente</th><th>Serviço</th><th>Profissional</th><th>Canal</th><th class="r">Valor</th><th>Situação</th></tr></thead><tbody>${lista.map(t=>`<tr class="click" data-action="abrirPedido" data-id="${esc(t.codigo)}" tabindex="0"><td class="nw"><b class="num">${esc(t.codigo)}</b></td><td class="nw num">${fmtData(t.data)}<br><span class="muted small">${esc(t.horario)}</span></td><td>${esc(t.clienteNome)}<br><span class="muted small">${esc(t.bairro)}</span></td><td>${esc(ESPEC[t.servico])}${t.urgencia==="alta"?` <span class="tag f-processamento">urgente</span>`:""}</td><td>${esc(t.profissionalNome)}${chipOrdem(t)?`<br>${chipOrdem(t)}`:""}</td><td>${esc(CANAL[t.canal])}</td><td class="r">${brl(t.valores.total)}</td><td>${chip(t.status)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function vPedido(){
+  const t=D.transacoes.find(x=>x.codigo===S.route.codigo);
+  if(!t)return`<div class="notice bad">Pedido ${esc(S.route.codigo)} não encontrado. <a href="#central-pedidos">Voltar aos pedidos</a></div>`;
+  const v=t.valores;const at=ativa(t);const prof=D.profs.find(p=>p.id===t.profissionalId);
+  const evs=[...t.eventos].sort((a,b)=>a.em<b.em?-1:1);
+  const aviso=t.status==="concluido"?caixaAviso("conclusao",t,"Avisar o cliente: conclusão e recibo"):t.status==="cancelado"?caixaAviso("cancelamento",t,"Avisar o cliente: cancelamento"):situacaoOrdem(t)==="confirmada"?caixaAviso("profConfirmou",t,"Avisar o cliente: profissional confirmou"):caixaAviso("confirmacao",t,"Avisar o cliente: confirmação do pedido");
+  return`<div class="pagehead"><div class="row"><h1 class="num">${esc(t.codigo)}</h1>${chip(t.status)}${t.pagamentoStatus!=="pago"?chip(t.pagamentoStatus==="pendente"?"agendado":"cancelado",{agendado:PAGST[t.pagamentoStatus],cancelado:PAGST[t.pagamentoStatus]}):""}</div><a class="btn ghost sm" href="#central-pedidos">← Todos os pedidos</a></div>
+  <div class="card stack">
+    <div class="det">
+      <div><div class="k">Cliente</div><div class="v">${esc(t.clienteNome)}</div><div class="muted small">${esc(fmtTel(t.telefone))}${t.email?` · ${esc(t.email)}`:""}</div></div>
+      <div><div class="k">Endereço</div><div class="v">${esc(t.endereco)}</div><div class="muted small">${esc(local(t.bairro,t.regiao))}</div></div>
+      <div><div class="k">Data e horário</div><div class="v">${fmtData(t.data)} · ${esc(t.horario)} às ${hmDe(t.fimMin)}</div></div>
+      <div><div class="k">Serviço</div><div class="v">${esc(ESPEC[t.servico])}</div><div class="muted small">Urgência ${esc(URG[t.urgencia].toLowerCase())} · ${fmtH(t.horas)}</div></div>
+      <div><div class="k">Profissional</div><div class="v">${esc(t.profissionalNome)}</div><div class="muted small">${prof?esc(local(prof.bairro,prof.regiao)):""}</div></div>
+      <div><div class="k">Origem</div><div class="v">${esc(CANAL[t.canal])}</div><div class="muted small">${esc(t.atendimentoId||"")}${t.filaId?` · ${esc(t.filaId)}`:""}</div></div>
+    </div>
+    <div><div class="k muted small"><b>Problema relatado</b></div><p>“${esc(t.descricao)}”</p></div>
+    ${at&&situacaoOrdem(t)==="recusada"?`<div class="notice bad"><b>${esc(t.profissionalNome)} recusou este serviço</b>: ${esc(t.ordem.motivoRecusa||"")}. Troque o profissional para manter o horário do cliente.</div>`:""}
+    ${at?`<div class="row"><button class="btn ${situacaoOrdem(t)==="recusada"?"accent":"ghost"}" data-action="trocarProf" data-id="${esc(t.codigo)}">Trocar profissional</button></div>`:""}
+    ${at?`<div class="row"><button class="btn primary" data-action="concluir" data-id="${esc(t.codigo)}">Registrar conclusão</button><button class="btn danger" data-action="cancelar" data-id="${esc(t.codigo)}">Cancelar pedido</button></div>`:""}
+    ${t.status==="concluido"&&!t.avaliacao?`<div class="row"><button class="btn ghost" data-action="avaliarCentral" data-id="${esc(t.codigo)}">Registrar avaliação dada por telefone</button><span class="muted small">O cliente também pode avaliar sozinho em "Consultar meu pedido".</span></div>`:""}
+    ${t.avaliacao?`<p>Avaliação: ${estrelas(t.avaliacao.nota)} <b>${t.avaliacao.nota}/5</b> ${t.avaliacao.comentario?`· “${esc(t.avaliacao.comentario)}”`:""} <span class="muted small">(${t.avaliacao.via==="cliente"?"pelo cliente":"registrada pela central"})</span></p>`:""}
+  </div>
+  <section class="stack"><h2 style="font-size:1.2rem">Comunicação</h2><div class="two">${aviso}${caixaProf(t)}</div></section>
+  <div class="two"><div class="stack">${documento(t)}<div class="card stack"><h3>Anexos</h3>${htmlAnexos(t.anexos,"pedido",t.codigo)}</div></div>
+    <div class="card stack"><h3>Histórico da transação</h3><div class="legenda"><span><span class="tag f-entrada">Entrada</span> dados recebidos</span><span><span class="tag f-processamento">Processamento</span> ações do sistema</span><span><span class="tag f-saida">Saída</span> respostas ao cliente</span></div>
+      <ol class="timeline">${evs.map(e=>`<li><time>${fmtDH(e.em)}</time><div><span class="tag f-${esc(e.fase)}">${FASE[e.fase]}</span> ${esc(e.texto)}</div></li>`).join("")}</ol></div></div>`;
+}
+
+/* ================= GERENTE ================= */
+function metricas(){
+  const T=D.transacoes,conc=T.filter(t=>t.status==="concluido");
+  const fat=r2(conc.reduce((a,t)=>a+t.valores.total,0)),rec=r2(conc.reduce((a,t)=>a+t.valores.taxaPlataforma-t.valores.descontoPix,0));
+  const av=T.filter(t=>t.avaliacao);
+  return{total:T.length,concluidos:conc.length,andamento:T.filter(ativa).length,cancelados:T.filter(t=>t.status==="cancelado").length,faturamento:fat,receita:rec,ticket:conc.length?r2(fat/conc.length):0,nota:av.length?r2(media(av.map(t=>t.avaliacao.nota))):0,nAval:av.length,
+    porEsp:Object.keys(ESPEC).map(k=>({nome:ESPEC[k],pedidos:T.filter(t=>t.servico===k).length,fat:r2(conc.filter(t=>t.servico===k).reduce((a,t)=>a+t.valores.total,0))})),
+    porStatus:Object.keys(STATUS).map(k=>({k,n:T.filter(t=>t.status===k).length,valor:r2(T.filter(t=>t.status===k).reduce((a,t)=>a+t.valores.total,0))})),
+    porPag:Object.keys(PAG).map(k=>({nome:PAG[k],n:T.filter(t=>t.pagamento===k).length,valor:r2(T.filter(t=>t.pagamento===k&&t.status!=="cancelado").reduce((a,t)=>a+t.valores.total,0))}))};
+}
+function barras(itens,campo,fmt,cor){const max=Math.max(1,...itens.map(i=>i[campo]));return`<div class="bars">${itens.map(i=>`<div class="bar-row"><span>${esc(i.nome)}</span><div class="bar-track"><div class="bar-fill" style="width:${(i[campo]/max*100).toFixed(1)}%;background:${cor}"></div></div><span class="v">${fmt(i[campo])}</span></div>`).join("")}</div>`}
+function vGerente(){
+  const m=metricas();const ev=D.transacoes.flatMap(t=>t.eventos);const c=f=>ev.filter(e=>e.fase===f).length;
+  return`<div class="pagehead"><div><h1>Indicadores</h1><p>Resultado dos pedidos processados pela central. Todos os números vêm dos pedidos registrados neste sistema.</p></div></div>
+  <div class="kpis">
+    <div class="kpi"><span>Pedidos</span><b>${m.total}</b></div><div class="kpi"><span>Concluídos</span><b style="color:var(--ok)">${m.concluidos}</b></div><div class="kpi"><span>Em andamento</span><b style="color:var(--info)">${m.andamento}</b></div><div class="kpi"><span>Cancelados</span><b style="color:var(--bad)">${m.cancelados}</b></div>
+    <div class="kpi hl"><span>Faturamento (concluídos)</span><b>${brl(m.faturamento)}</b></div><div class="kpi hl"><span>Receita da plataforma</span><b>${brl(m.receita)}</b><em>taxa de 10% menos o desconto do Pix</em></div><div class="kpi"><span>Ticket médio</span><b>${brl(m.ticket)}</b></div><div class="kpi"><span>Nota média</span><b>${m.nota?m.nota.toFixed(2).replace(".",",")+" ★":"—"}</b><em>${m.nAval} avaliações</em></div></div>
+  <section class="card stack"><h3>Como o SPT processa cada pedido</h3><p class="muted small">Cada pedido passa pelas três etapas, e cada ação fica registrada no histórico do pedido. Total de registros até agora entre parênteses.</p>
+    <div class="spt"><div class="col" style="--c:var(--info)"><b>Entrada (${c("entrada")})</b><p class="muted small">Dados recebidos</p><ul><li>Contato por formulário, ligação ou WhatsApp</li><li>Dados do cliente e descrição</li><li>Anexos (fotos, PDF)</li><li>Triagem do atendente</li></ul></div><div class="arrow">→</div>
+    <div class="col" style="--c:var(--accent)"><b>Processamento (${c("processamento")})</b><p class="muted small">Ações do sistema</p><ul><li>Fila e cronômetro do atendimento</li><li>Conferência da agenda</li><li>Cálculo do valor</li><li>Pagamento simulado</li></ul></div><div class="arrow">→</div>
+    <div class="col" style="--c:var(--ok)"><b>Saída (${c("saida")})</b><p class="muted small">Respostas ao cliente</p><ul><li>Protocolo e posição na fila</li><li>Confirmação por WhatsApp ou e-mail</li><li>Comprovante e recibo</li><li>Relatórios do gerente</li></ul></div></div></section>
+  <div class="two"><section class="card stack"><h3>Pedidos por especialidade</h3>${barras(m.porEsp,"pedidos",n=>n,"var(--accent)")}</section><section class="card stack"><h3>Faturamento por especialidade</h3><p class="muted small" style="margin-top:-6px">Somente concluídos</p>${barras(m.porEsp,"fat",brl,"var(--brand)")}</section></div>
+  <div class="two"><section class="card stack"><h3>Por situação</h3><table class="calc"><tbody>${m.porStatus.map(s=>`<tr><td>${chip(s.k)}</td><td class="v">${s.n}</td><td class="v">${brl(s.valor)}</td></tr>`).join("")}</tbody></table></section><section class="card stack"><h3>Por forma de pagamento</h3><table class="calc"><tbody>${m.porPag.map(s=>`<tr><td>${esc(s.nome)}</td><td class="v">${s.n}</td><td class="v">${brl(s.valor)}</td></tr>`).join("")}</tbody></table><p class="muted small">Valores sem os cancelados.</p></section></div>`;
+}
+function atendPeriodo(){
+  const p=S.cham.periodo,lim=p==="hoje"?new Date(hojeISO()+"T00:00:00"):p==="7d"?new Date(new Date(hojeISO()+"T00:00:00").getTime()-6*864e5):new Date(0);
+  return D.atendimentos.filter(a=>new Date(a.fim)>=lim);
+}
+function alertas(){
+  const L=[];const agora=Date.now();
+  for(const f of filaAguardando()){const m=(agora-new Date(f.criadoEm))/6e4;if(m>15)L.push({alta:m>30,t:`${f.nome} (${f.id}) espera há ${Math.round(m)} min na fila`,d:"Meta: retorno em até 15 minutos."})}
+  const a=D.atendimentoAberto;if(a){const m=(agora-new Date(a.inicio))/6e4;if(m>15)L.push({alta:false,t:`Atendimento ${a.id} aberto há ${Math.round(m)} min`,d:"Atendimentos longos seguram a fila."})}
+  for(const t of D.transacoes.filter(ativa)){const fim=new Date(t.data+"T00:00:00").getTime()+t.fimMin*6e4;if(fim<agora)L.push({alta:true,t:`Pedido ${t.codigo} passou do horário sem conclusão`,d:`${t.profissionalNome}, ${fmtData(t.data)} às ${t.horario}. Confirme e registre a conclusão ou o cancelamento.`,id:t.codigo})}
+  for(const t of D.transacoes.filter(ativa)){const sit=situacaoOrdem(t);const min=(agora-new Date(t.criadoEm))/6e4;if(sit!=="confirmada"&&min>30){const ate=new Date(t.data+"T"+t.horario+":00").getTime()-agora;L.push({alta:sit==="recusada"||ate<24*36e5,t:`Pedido ${t.codigo}: ${sit==="recusada"?"profissional recusou, troque o profissional":sit==="nao_enviada"?"ordem não enviada ao profissional":"profissional ainda não confirmou"}`,d:`${t.profissionalNome}, ${fmtData(t.data)} às ${t.horario}. Envie a ordem ou ligue para confirmar.`,id:t.codigo})}}
+  const ap=atendPeriodo();if(ap.length>=5){const c=ap.filter(x=>x.resultado==="pedido").length/ap.length;if(c<.4)L.push({alta:false,t:`Conversão baixa no período: ${Math.round(c*100)}%`,d:"Menos de 4 em cada 10 contatos viraram pedido."})}
+  for(const k of Object.keys(ESPEC))if(!D.profs.some(p=>p.especialidade===k&&p.disponivel))L.push({alta:true,t:`Nenhum ${ESPEC[k].toLowerCase()} disponível`,d:"Pedidos dessa especialidade não podem ser agendados."});
+  return L.sort((x,y)=>y.alta-x.alta);
+}
+function vChamadas(){
+  const A=atendPeriodo();const fila=filaAguardando();
+  const conv=A.length?A.filter(a=>a.resultado==="pedido").length/A.length:0;
+  const esp=A.filter(a=>a.esperaSeg).map(a=>a.esperaSeg);
+  const porCanal=Object.keys(CANAL).map(k=>({nome:CANAL[k],n:A.filter(a=>a.canal===k).length,dur:media(A.filter(a=>a.canal===k).map(a=>a.duracaoSeg))}));
+  const porRes=Object.keys(RESULT).map(k=>({nome:RESULT[k],n:A.filter(a=>a.resultado===k).length}));
+  const horas=Array.from({length:13},(_,i)=>i+8).map(h=>({h,n:A.filter(a=>new Date(a.inicio).getHours()===h).length}));const maxH=Math.max(1,...horas.map(x=>x.n));
+  const motivos=MOTIVOS.map(m=>({nome:m,n:A.filter(a=>a.motivo===m).length})).filter(x=>x.n);
+  const L=alertas();const maiorEspera=fila.length?(Date.now()-new Date(fila[0].criadoEm))/1000:0;
+  const nomeP={hoje:"hoje","7d":"nos últimos 7 dias",tudo:"desde o início"}[S.cham.periodo];
+  return`<div class="pagehead"><div><h1>Monitoramento de chamadas</h1><p>Cada contato com a central (formulário, ligação ou WhatsApp) é cronometrado: quanto o cliente esperou, quanto durou o atendimento e se virou pedido.</p></div>
+    <div class="seg">${[["hoje","Hoje"],["7d","7 dias"],["tudo","Tudo"]].map(([k,n])=>`<button type="button" class="${S.cham.periodo===k?"on":""}" data-action="periodo" data-v="${k}">${n}</button>`).join("")}</div></div>
+  <div class="kpis">
+    <div class="kpi"><span>Contatos ${nomeP}</span><b>${A.length}</b></div>
+    <div class="kpi hl"><span>Taxa de conversão</span><b>${A.length?Math.round(conv*100)+"%":"—"}</b><em>contatos que viraram pedido</em></div>
+    <div class="kpi hl"><span>Tempo médio de atendimento</span><b>${A.length?fmtDur(media(A.map(a=>a.duracaoSeg))):"—"}</b></div>
+    <div class="kpi"><span>Espera média na fila</span><b>${esp.length?fmtDur(media(esp)):"—"}</b><em>do formulário até ser chamado</em></div>
+    <div class="kpi"><span>Na fila agora</span><b>${fila.length}</b></div>
+    <div class="kpi"><span>Maior espera agora</span><b class="${maiorEspera>900?"espera alta":""}">${fila.length?`<span data-desde="${esc(fila[0].criadoEm)}">${relogio(maiorEspera)}</span>`:"—"}</b></div>
+    <div class="kpi"><span>Atendimento em curso</span><b style="font-size:1.1rem">${D.atendimentoAberto?`${esc(D.atendimentoAberto.id)} · <span data-desde="${esc(D.atendimentoAberto.inicio)}">${relogio((Date.now()-new Date(D.atendimentoAberto.inicio))/1000)}</span>`:"Nenhum"}</b></div>
+    <div class="kpi"><span>Pedidos gerados</span><b>${A.filter(a=>a.resultado==="pedido").length}</b></div></div>
+  <section class="card stack"><h3>Alertas ${L.length?`<span class="badge">${L.length}</span>`:""}</h3>${L.length?`<ul class="alertas">${L.map(a=>`<li class="${a.alta?"alta":""}"><span class="chip ${a.alta?"st-cancelado":"st-agendado"}">${a.alta?"Crítico":"Atenção"}</span><div><b>${esc(a.t)}</b><p class="muted small">${esc(a.d)}</p></div>${a.id?`<a class="btn ghost sm" href="#central-${esc(a.id)}">Abrir</a>`:""}</li>`).join("")}</ul>`:`<p class="notice ok">Tudo em ordem: nenhum alerta agora.</p>`}</section>
+  <div class="two"><section class="card stack"><h3>Contatos por canal</h3>${barras(porCanal,"n",n=>n,"var(--brand)")}<p class="muted small">Duração média: ${porCanal.map(c=>`${c.nome} ${c.n?fmtDur(c.dur):"—"}`).join(" · ")}</p></section>
+    <section class="card stack"><h3>Resultado dos contatos</h3>${barras(porRes,"n",n=>n,"var(--accent)")}${motivos.length?`<p class="small"><b>Motivos sem pedido:</b> ${motivos.map(m=>`${esc(m.nome)} (${m.n})`).join("; ")}.</p>`:""}</section></div>
+  <section class="card stack"><h3>Contatos por hora do dia</h3><p class="muted small">Mostra os horários de pico, para decidir quantos atendentes manter em cada faixa.</p>
+    <div class="colunas">${horas.map(x=>`<div class="coluna"><b>${x.n||""}</b><div class="c" style="height:${x.n/maxH*100}%"></div><span>${x.h}h</span></div>`).join("")}</div></section>
+  <section class="stack"><h3>Últimos contatos</h3><div class="tbl-wrap"><table class="tbl"><thead><tr><th>Atendimento</th><th>Início</th><th>Canal</th><th>Cliente</th><th class="r">Espera</th><th class="r">Duração</th><th>Resultado</th></tr></thead><tbody>${[...A].sort((a,b)=>a.inicio<b.inicio?1:-1).slice(0,20).map(a=>`<tr><td class="nw"><b>${esc(a.id)}</b></td><td class="nw num">${fmtDH(a.inicio)}</td><td>${esc(CANAL[a.canal])}</td><td>${esc(a.clienteNome)}</td><td class="r">${a.esperaSeg?fmtDur(a.esperaSeg):"—"}</td><td class="r">${fmtDur(a.duracaoSeg)}</td><td>${chip(a.resultado,RESULT)}${a.transacaoId?` <a href="#central-${esc(a.transacaoId)}" class="small">${esc(a.transacaoId)}</a>`:a.motivo?`<br><span class="muted small">${esc(a.motivo)}</span>`:""}</td></tr>`).join("")||`<tr><td colspan="7" class="muted">Nenhum contato no período.</td></tr>`}</tbody></table></div></section>`;
+}
+function vProfs(){
+  const ag=id=>D.transacoes.filter(t=>ativa(t)&&t.profissionalId===id).length;
+  const lista=[...D.profs].sort((a,b)=>a.especialidade.localeCompare(b.especialidade)||notaProf(b).media-notaProf(a).media);
+  return`<div class="pagehead"><div><h1>Profissionais</h1><p>Clique no nome para ver o perfil completo: avaliações, serviços feitos e agenda. Quem está indisponível não aparece para o atendente na hora de agendar.</p></div></div>
+  <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Profissional</th><th>Especialidade</th><th>Local</th><th>Telefone</th><th class="r">Preço base</th><th class="r">Por hora</th><th class="r">Nota</th><th class="r">Experiência</th><th class="r">Agendados</th><th>Disponível</th></tr></thead><tbody>
+  ${lista.map(p=>{const n=notaProf(p);return`<tr><td><div class="prof-mini">${avatar(p,36)}<button type="button" class="linkbtn" data-action="verPerfil" data-id="${esc(p.id)}" data-modo="central">${esc(p.nome)}</button></div></td><td>${esc(ESPEC[p.especialidade])}</td><td>${esc(local(p.bairro,p.regiao))}</td><td class="nw">${esc(fmtTel(p.telefone))}</td><td class="r">${brl(p.precoBase)}</td><td class="r">${brl(p.precoHora)}</td><td class="r">${n.total?`${n.media.toFixed(2).replace(".",",")} <span class="muted">(${n.total})</span>`:`<span class="chip st-agendado">Novo</span>`}</td><td class="r">${p.experiencia} anos</td><td class="r">${ag(p.id)}</td><td><button class="toggle ${p.disponivel?"on":"off"}" data-action="disp" data-id="${esc(p.id)}" aria-pressed="${p.disponivel}">${p.disponivel?"Sim":"Não"}</button></td></tr>`}).join("")}</tbody></table></div>`;
+}
+
+/* ================= DADOS ================= */
+function abrirDados(){
+  const tam=(()=>{try{return(localStorage.getItem(CHAVE)||"").length}catch(e){return 0}})();
+  abrirModal({titulo:"Dados do sistema",html:`<p class="muted small">Os dados ficam guardados neste navegador (${(tam/1024).toFixed(0)} KB de pedidos e cadastros, ${D.anexos.length} anexo(s)). Outro computador ou celular tem os próprios dados.</p>
+    <div class="stack"><div class="row between"><div><b>Exportar</b><p class="muted small">Baixa um arquivo com tudo, inclusive anexos. Serve de cópia de segurança ou para levar a outro aparelho.</p></div><button class="btn ghost" data-action="exportar">Exportar</button></div>
+    <div class="row between"><div><b>Importar</b><p class="muted small">Substitui os dados deste navegador pelos de um arquivo exportado.</p></div><button class="btn ghost" data-action="importar">Importar</button></div>
+    <div class="row between"><div><b>Restaurar exemplo</b><p class="muted small">Apaga tudo e volta aos dados fictícios iniciais, com datas atualizadas para hoje. Use antes da apresentação.</p></div><button class="btn danger" data-action="restaurar">Restaurar</button></div></div>`});
+}
+async function exportar(){
+  const ax={};for(const a of D.anexos){const v=await ANEXOS.get(a.id);if(v)ax[a.id]=v}
+  const blob=new Blob([JSON.stringify({app:"resolveja-central",versao:1,exportadoEm:agoraISO(),dados:D,anexos:ax})],{type:"application/json"});
+  const url=URL.createObjectURL(blob);const l=document.createElement("a");l.href=url;l.download=`resolveja-dados-${hojeISO()}.json`;document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);
+  toast("Arquivo exportado. Confira a pasta de downloads.");
+}
+document.getElementById("importar").addEventListener("change",async e=>{
+  const f=e.target.files[0];e.target.value="";if(!f)return;
+  try{const j=JSON.parse(await f.text());if(j.app!=="resolveja-central"||!j.dados||j.dados.versao!==1)throw new Error("arquivo");
+    await ANEXOS.limpar();for(const[id,v]of Object.entries(j.anexos||{}))await ANEXOS.put(id,v);
+    D=j.dados;salvar();fecharModal();render();toast("Dados importados.")}
+  catch(err){toast("Esse arquivo não é uma exportação válida do sistema ResolveJá.","bad")}
+});
+
+/* ================= EVENTOS ================= */
+function setPath(path,val){const ks=path.split(".");let o=ks[0]==="at"?D.atendimentoAberto:ks[0]==="form"?S.form:S;const resto=ks[0]==="at"||ks[0]==="form"?ks.slice(1):ks;for(let i=0;i<resto.length-1;i++)o=o[resto[i]];o[resto.at(-1)]=val}
+document.addEventListener("input",e=>{
+  const el=e.target,p=el.dataset&&el.dataset.bind;if(!p)return;
+  let v=el.type==="checkbox"?el.checked:el.value;
+  if(el.dataset.type==="num"){v=Number(String(v).replace(",","."));if(!isFinite(v)||v<=0)return;v=Math.min(8,Math.max(0.5,Math.round(v*2)/2))}
+  setPath(p,v);
+  if(p==="at.data"){const w=document.getElementById("aviso-data");if(w){const ruim=v&&v<hojeISO();w.hidden=!ruim;w.textContent=ruim?`A data ${fmtData(v)} já passou. Escolha hoje ou uma data futura.`:""}}
+  if(p.startsWith("at.")){if(["at.servico","at.data","at.horario","at.horas"].includes(p))D.atendimentoAberto.profId=null;D.atendimentoAberto.erros=null;salvar()}
+  if(el.dataset.live){const b=document.getElementById("tabela");if(b)b.innerHTML=tabelaPedidos([...D.transacoes].filter(t=>(!S.pedidos.status||t.status===S.pedidos.status)&&(!S.pedidos.q||(t.codigo+t.clienteNome+t.profissionalNome).toLowerCase().includes(S.pedidos.q.toLowerCase()))).sort((a,b)=>a.criadoEm<b.criadoEm?1:-1))}
+});
+document.addEventListener("change",async e=>{
+  const el=e.target;
+  if(el.dataset&&el.dataset.agendar){const a=D.atendimentoAberto;if(a&&a.data&&a.horario&&horaPassou(a.data,a.horario))a.horario="";agendarRender()}
+  if(el.dataset&&el.dataset.rerender){if(el.id==="a-data"){const a=D.atendimentoAberto;if(a.data&&a.horario&&horaPassou(a.data,a.horario))a.horario=""}setTimeout(render,0)}
+  if(el.dataset&&el.dataset.type==="num"&&D.atendimentoAberto)el.value=D.atendimentoAberto.horas;
+  if(el.dataset&&el.dataset.upload&&el.files.length){
+    const files=[...el.files];el.value="";
+    try{
+      if(el.dataset.upload==="form"){for(const f of files.slice(0,3-S.form.anexos.length)){let a;if(f.type.startsWith("image/"))a=await reduzirImagem(f);else if(f.type==="application/pdf"&&f.size<=2e6)a={dataURL:await lerComoDataURL(f),tipo:f.type,nome:f.name};else throw new Error(`${f.name}: envie foto ou PDF de até 2 MB.`);S.form.anexos.push(a)}render();return}
+      if(el.dataset.upload==="cad"){for(const f of files.slice(0,3-S.cad.anexos.length)){let a;if(f.type.startsWith("image/"))a=await reduzirImagem(f);else if(f.type==="application/pdf"&&f.size<=2e6)a={dataURL:await lerComoDataURL(f),tipo:f.type,nome:f.name};else throw new Error(`${f.name}: envie foto ou PDF de até 2 MB.`);S.cad.anexos.push(a)}render();return}
+      if(el.dataset.upload==="atendimento"){const a=D.atendimentoAberto;const ids=await guardarArquivos(files,{tipo:"atendimento",id:a.id});a.anexos.push(...ids);salvar();render();toast(`${ids.length} anexo(s) adicionado(s).`);return}
+      if(el.dataset.upload==="pedido"){const t=D.transacoes.find(x=>x.codigo===el.dataset.id);const ids=await guardarArquivos(files,{tipo:"transacao",id:t.codigo});t.anexos.push(...ids);t.eventos.push(ev("entrada",`${ids.length} anexo(s) adicionado(s) ao pedido.`));salvar();render();toast("Anexo adicionado ao pedido.");return}
+    }catch(err){toast(err.message||"Não foi possível anexar o arquivo.","bad")}
+  }
+});
+document.addEventListener("submit",e=>{const f=e.target.dataset.form;if(!f)return;e.preventDefault();if(f==="enviarFila")enviarFila();if(f==="consultar")consultar();if(f==="enviarCad")enviarCad();if(f==="loginProf")loginProf()});
+function loginProf(tel){const d=digitos(tel||S.prof.tel);S.prof.tel=d?fmtTel(d):S.prof.tel;const p=D.profs.find(x=>digitos(x.telefone)===d);
+  if(p){S.prof.id=p.id;S.prof.erro=""}else{S.prof.id=null;const c=D.candidaturas.some(x=>x.telefone===d);S.prof.erro=d.length<10?"Informe o telefone com DDD.":c?"":"Não encontramos um profissional com esse telefone. Faça seu cadastro em Quero ser parceiro."}render()}
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches&&e.target.matches("tr.click"))e.target.click();if(e.key==="Escape"&&S.modal)fecharModal()});
+document.addEventListener("click",async e=>{
+  const el=e.target.closest("[data-action]");if(!el)return;
+  const a=el.dataset.action,id=el.dataset.id,v=el.dataset.v;
+  switch(a){
+    case"fecharModal":if(el.classList.contains("modal-bg")&&e.target!==el)break;fecharModal();break;
+    case"modalBtn":{const b=S.modal&&S.modal.botoes[Number(el.dataset.i)];if(b)await b.acao();break}
+    case"dados":abrirDados();break;
+    case"exportar":exportar();break;
+    case"importar":document.getElementById("importar").click();break;
+    case"restaurar":confirmar("Restaurar dados de exemplo?","Todos os pedidos, atendimentos e anexos deste navegador serão apagados e substituídos pelos dados fictícios iniciais.","Restaurar",async()=>{await ANEXOS.limpar();D=gerarExemplo();salvar();S.cliente={ultimo:null,consulta:{codigo:"",telefone:""},resultado:null,nota:0,comentario:""};S.form=novoForm();fecharModal();render();toast("Dados de exemplo restaurados.")},true);break;
+    case"limparFotosForm":S.form.anexos=[];render();break;
+    case"limparAnexosLocais":S.cad.anexos=[];render();break;
+    case"novoCad":S.candUltimo=null;S.cad=novoCad();render();break;
+    case"prepProf":S.candUltimo=null;S.prof={tel:fmtTel(v),id:null,erro:""};loginProf(v);break;
+    case"loginDemo":loginProf(document.getElementById("l-demo").value);break;
+    case"sairProf":S.prof={tel:"",id:null,erro:""};render();break;
+    case"dispProprio":{const p=D.profs.find(x=>x.id===S.prof.id);p.disponivel=!p.disponivel;salvar();render();toast(p.disponivel?"Você voltou a receber novos serviços.":"Você não vai receber novos serviços até ficar disponível de novo.");break}
+    case"escolherData":{const at=D.atendimentoAberto;at.data=v;if(at.horario&&horaPassou(at.data,at.horario))at.horario="";at.profId=null;at.erros=null;salvar();render();break}
+    case"profAceitar":{const t=D.transacoes.find(x=>x.codigo===id);t.ordem=t.ordem||{enviadaEm:t.criadoEm,meio:"sistema"};t.ordem.confirmadaEm=agoraISO();t.ordem.confirmadaPor="profissional";
+      t.eventos.push(ev("entrada",`${t.profissionalNome} aceitou a ordem de serviço na área do profissional.`),ev("processamento","Pedido atualizado: profissional confirmado."),ev("saida",`Cliente passa a ver “Profissional confirmou” na consulta do pedido; aviso pronto na central.`));salvar();render();toast("Serviço aceito. A central e o cliente já estão vendo a confirmação.");break}
+    case"profRecusar":{const t=D.transacoes.find(x=>x.codigo===id);const M=["Já tenho outro compromisso nesse horário","Endereço muito distante","Serviço fora da minha especialidade","Outro motivo"];
+      abrirModal({titulo:`Recusar ${id}?`,html:`<p class="muted small">A central será avisada na hora para escolher outro profissional para o cliente.</p><div class="stack">${M.map((m,i)=>`<label class="row small"><input type="radio" name="mrec" value="${esc(m)}" ${i===0?"checked":""}> ${esc(m)}</label>`).join("")}</div>`,
+        botoes:[{rotulo:"Voltar",classe:"ghost",acao:fecharModal},{rotulo:"Recusar serviço",classe:"danger",acao:()=>{const m=(document.querySelector('input[name="mrec"]:checked')||{}).value||"Outro motivo";t.ordem=t.ordem||{enviadaEm:t.criadoEm,meio:"sistema"};t.ordem.recusadaEm=agoraISO();t.ordem.motivoRecusa=m;
+          t.eventos.push(ev("entrada",`${t.profissionalNome} recusou a ordem de serviço: ${m}.`),ev("saida","Central alertada para trocar o profissional."));salvar();fecharModal();render();toast("Recusa enviada à central.")}}]});break}
+    case"profConcluir":{const t=D.transacoes.find(x=>x.codigo===id);confirmar(`Informar a conclusão de ${id}?`,`Confirme que terminou o serviço na casa de ${t.clienteNome}.${t.pagamento==="dinheiro"?` Você recebeu ${brl(t.valores.total)} em dinheiro.`:""} A central envia o recibo e pede a avaliação ao cliente.`,"Informar conclusão",()=>{aplicarConclusao(t,agoraISO(),"profissional");salvar();fecharModal();render();toast("Conclusão enviada. Obrigado!")});break}
+    case"abaCad":S.cads.aba=v;render();break;
+    case"checkCad":{const c=D.candidaturas.find(x=>x.id===id);c.checks[v]=el.checked;c.historico.push({em:agoraISO(),texto:`${el.checked?"Conferido":"Desmarcado"}: ${CHECKS.find(x=>x[0]===v)[1]}.`});salvar();setTimeout(render,0);break}
+    case"aprovarCad":{const c=D.candidaturas.find(x=>x.id===id);confirmar(`Aprovar ${c.nome}?`,`${c.nome} passa a aparecer para a central como ${ESPEC[c.especialidade].toLowerCase()} disponível em ${c.bairro}, marcado como novo na plataforma. Depois envie a mensagem de boas-vindas.`,"Aprovar cadastro",()=>{aprovarCad(c);salvar();fecharModal();S.cads.aba="aprovada";render();toast(`${c.nome} aprovado e ativo na plataforma.`)});break}
+    case"recusarCad":{const c=D.candidaturas.find(x=>x.id===id);
+      abrirModal({titulo:`Recusar o cadastro de ${c.nome}?`,html:`<div class="stack">${MOTIVOS_CAD.map((m,i)=>`<label class="row small"><input type="radio" name="mcad" value="${esc(m)}" ${i===0?"checked":""}> ${esc(m)}</label>`).join("")}</div>`,
+        botoes:[{rotulo:"Voltar",classe:"ghost",acao:fecharModal},{rotulo:"Recusar cadastro",classe:"danger",acao:()=>{const m=(document.querySelector('input[name="mcad"]:checked')||{}).value;c.status="recusada";c.motivo=m;c.analisadoEm=agoraISO();c.historico.push({em:agoraISO(),texto:`Cadastro recusado: ${m.toLowerCase()}.`});salvar();fecharModal();S.cads.aba="recusada";render();toast("Cadastro recusado. Envie a mensagem ao profissional.")}}]});break}
+    case"trocarProf":abrirTroca(D.transacoes.find(x=>x.codigo===id));break;
+    case"confirmarTroca":{const t=D.transacoes.find(x=>x.codigo===id);const p=D.profs.find(x=>x.id===v);trocarProfissional(t,p);salvar();fecharModal();render();toast(`Profissional trocado para ${p.nome}. A ordem já está na área dele.`);break}
+    case"novoPedidoCliente":S.cliente.ultimo=null;render();break;
+    case"prepConsulta":{const f=D.fila.find(x=>x.id===id);S.cliente.consulta={codigo:f.id,telefone:fmtTel(f.telefone)};S.cliente.resultado={fila:f.id};S.cliente.ultimo=null;break}
+    case"verPedidoCliente":S.cliente.consulta.codigo=id;S.cliente.resultado={codigo:id};render();break;
+    case"notaCliente":S.cliente.nota=Number(v);render();break;
+    case"avaliarCliente":{const t=D.transacoes.find(x=>x.codigo===id);if(!t||t.avaliacao||t.status!=="concluido")break;aplicarAvaliacao(t,S.cliente.nota,S.cliente.comentario,agoraISO(),"cliente",D.profs.find(p=>p.id===t.profissionalId));salvar();S.cliente.nota=0;S.cliente.comentario="";render();toast("Obrigado! Sua avaliação foi registrada.");break}
+    case"chamarProximo":{const f=filaAguardando()[0];if(f&&!D.atendimentoAberto)abrirAtendimento("formulario",f);break}
+    case"atenderFila":{const f=D.fila.find(x=>x.id===id);if(f&&!D.atendimentoAberto)abrirAtendimento("formulario",f);break}
+    case"novoAtendimento":if(!D.atendimentoAberto)abrirAtendimento(v,null);break;
+    case"usarGuia":{const g=GUIA[Number(el.dataset.i)];const at=D.atendimentoAberto;at.servico=g[1];at.urgencia=g[2];at.horas=g[3];at.profId=null;at.erros=null;salvar();render();toast(`Triagem preenchida: ${ESPEC[g[1]]}, urgência ${URG[g[2]].toLowerCase()}, ${fmtH(g[3])}. Ajuste se precisar.`);break}
+    case"urgencia":D.atendimentoAberto.urgencia=v;D.atendimentoAberto.erros=null;salvar();render();break;
+    case"escolherProf":D.atendimentoAberto.profId=id;D.atendimentoAberto.erros=null;salvar();render();break;
+    case"pagamento":D.atendimentoAberto.pagamento=v;salvar();render();break;
+    case"confirmarPedido":confirmarPedido();break;
+    case"encerrarSemPedido":encerrarSemPedido();break;
+    case"filtroStatus":S.pedidos.status=v;render();break;
+    case"abrirPedido":ir("central-"+id);break;
+    case"concluir":{const t=D.transacoes.find(x=>x.codigo===id);confirmar(`Registrar a conclusão de ${id}?`,`Confirme que ${t.profissionalNome} terminou o serviço.${t.pagamento==="dinheiro"?` O pagamento em dinheiro de ${brl(t.valores.total)} será registrado.`:""} O recibo é gerado e a mensagem de conclusão fica pronta para enviar.`,"Registrar conclusão",()=>{aplicarConclusao(t,agoraISO());salvar();fecharModal();render();toast("Conclusão registrada. Envie o recibo ao cliente.")});break}
+    case"cancelar":{const t=D.transacoes.find(x=>x.codigo===id);confirmar(`Cancelar ${id}?`,`O horário de ${t.profissionalNome} será liberado.${t.pagamentoStatus==="pago"?` O pagamento de ${brl(t.valores.total)} será estornado (simulação).`:""} Essa ação não pode ser desfeita.`,"Cancelar pedido",()=>{aplicarCancelamento(t,"cliente (pela central)",agoraISO());salvar();fecharModal();render();toast("Pedido cancelado e horário liberado.")},true);break}
+    case"avaliarCentral":{const t=D.transacoes.find(x=>x.codigo===id);S.notaCentral=0;
+      abrirModal({titulo:`Avaliação de ${t.profissionalNome}`,html:`<p class="muted small">Registre a nota que o cliente deu por telefone ou WhatsApp.</p><div class="stars" id="notaCentral">${[1,2,3,4,5].map(i=>`<button type="button" data-action="notaCentral" data-v="${i}" aria-label="${i} estrela${i>1?"s":""}">★</button>`).join("")}</div><label class="f" for="nc-com">Comentário do cliente (opcional)<textarea id="nc-com" style="min-height:60px"></textarea></label>`,
+        botoes:[{rotulo:"Voltar",classe:"ghost",acao:fecharModal},{rotulo:"Registrar avaliação",acao:()=>{if(!S.notaCentral){toast("Escolha uma nota de 1 a 5.","bad");return}aplicarAvaliacao(t,S.notaCentral,(document.getElementById("nc-com")||{}).value||"",agoraISO(),"central",D.profs.find(p=>p.id===t.profissionalId));salvar();fecharModal();render();toast("Avaliação registrada.")}}]});break}
+    case"notaCentral":S.notaCentral=Number(v);document.querySelectorAll("#notaCentral button").forEach((b,i)=>b.classList.toggle("on",i<S.notaCentral));break;
+    case"verPerfil":abrirPerfil(id,el.dataset.modo);break;
+    case"confirmarProf":{const t=D.transacoes.find(x=>x.codigo===id);t.ordem=t.ordem||{};t.ordem.confirmadaEm=agoraISO();t.eventos.push(ev("entrada",`${t.profissionalNome} confirmou a ordem de serviço (registrado pela central).`));salvar();if(S.modal&&S.modal.refazer){S.modal.html=S.modal.refazer();renderLayer()}else{if(S.modal)fecharModal();render()}toast("Confirmação do profissional registrada.");break}
+    case"registrarAviso":if(el.dataset.alvo==="prof"){const t=D.transacoes.find(x=>x.codigo===id);t.ordem=t.ordem||{};const agora=agoraISO();
+      if(el.dataset.tipo==="cancelProf"){t.ordem.cancelAvisadoEm=agora;t.eventos.push(ev("saida",`Cancelamento avisado a ${t.profissionalNome} por ${el.dataset.meio}.`))}
+      else{t.ordem.enviadaEm=agora;t.ordem.meio=el.dataset.meio;t.eventos.push(ev("saida",`Ordem de serviço enviada a ${t.profissionalNome} por ${el.dataset.meio}.`))}
+      salvar();setTimeout(()=>{if(S.modal&&S.modal.refazer){S.modal.html=S.modal.refazer();renderLayer();return}render()},300);break}
+    {const t=D.transacoes.find(x=>x.codigo===id);t.avisos=t.avisos||[];t.avisos.push({tipo:el.dataset.tipo,meio:el.dataset.meio,em:agoraISO()});t.eventos.push(ev("saida",`Aviso de ${NOME_AVISO[el.dataset.tipo]} enviado ao cliente por ${el.dataset.meio}.`));salvar();setTimeout(()=>{if(S.modal&&S.modal.refazer){S.modal.html=S.modal.refazer();renderLayer();return}render()},300);break}
+    case"copiarAviso":if(el.dataset.alvo==="prof"){const t=D.transacoes.find(x=>x.codigo===id);try{await navigator.clipboard.writeText(mensagemProf(el.dataset.tipo,t));t.ordem=t.ordem||{};if(el.dataset.tipo==="cancelProf"){t.ordem.cancelAvisadoEm=agoraISO();t.eventos.push(ev("saida",`Cancelamento copiado para enviar a ${t.profissionalNome}.`))}else{t.ordem.enviadaEm=agoraISO();t.ordem.meio="texto copiado";t.eventos.push(ev("saida",`Ordem de serviço copiada para enviar a ${t.profissionalNome}.`))}salvar();toast("Texto copiado. Cole na conversa com o profissional.");if(!S.modal)render()}catch(err){toast("O navegador não permitiu copiar.","bad")}break}
+    {const t=D.transacoes.find(x=>x.codigo===id);const m=mensagem(el.dataset.tipo,t);try{await navigator.clipboard.writeText(m.texto);t.avisos=t.avisos||[];t.avisos.push({tipo:el.dataset.tipo,meio:"texto copiado",em:agoraISO()});t.eventos.push(ev("saida",`Mensagem de ${NOME_AVISO[el.dataset.tipo]} copiada para envio ao cliente.`));salvar();toast("Texto copiado. Cole no WhatsApp ou no e-mail.")}catch(err){toast("O navegador não permitiu copiar. Selecione o texto e copie manualmente.","bad")}break}
+    case"verAnexo":{const ax=D.anexos.find(x=>x.id===id);const val=await ANEXOS.get(id);if(!ax||!val){toast("Anexo não encontrado neste navegador.","bad");break}
+      if(ax.tipo==="application/pdf"){try{const b=await(await fetch(val)).blob();const u=URL.createObjectURL(b);const w=window.open(u,"_blank");if(!w)toast("Permita pop-ups para abrir o PDF.","bad")}catch(err){toast("Não foi possível abrir o PDF.","bad")}}
+      else abrirModal({titulo:ax.nome,wide:true,html:`<img class="full" src="${val}" alt="${esc(ax.nome)}"><p class="muted small">Anexado em ${fmtDH(ax.criadoEm)}.</p>`});break}
+    case"periodo":S.cham.periodo=v;render();break;
+    case"disp":{const p=D.profs.find(x=>x.id===id);p.disponivel=!p.disponivel;salvar();render();toast(`${p.nome} agora está ${p.disponivel?"disponível":"indisponível"}.`);break}
+  }
+});
+/* atualiza os cronômetros a cada segundo sem redesenhar a página */
+setInterval(()=>{document.querySelectorAll("[data-desde]").forEach(x=>{x.textContent=relogio((Date.now()-new Date(x.dataset.desde))/1000)})},1000);
+/* mantém abas abertas em sincronia (ex.: cliente numa aba, central em outra) */
+window.addEventListener("storage",e=>{if(e.key===CHAVE&&e.newValue){try{D=JSON.parse(e.newValue);agendarRender()}catch(err){}}});
+
+/* ---------- Início ---------- */
+(async function(){carregar();await ANEXOS.abrir();S.route=lerRota();render()})();
+</script>
+</body>
+</html>
