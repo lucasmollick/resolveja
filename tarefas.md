@@ -1,7 +1,7 @@
 # Tarefas — ResolveJá · Central de Atendimento (SPT)
 
 **Equipe:** Guilherme Amorim, João Víctor Henrique e Lucas Freitas Mollick
-**Base:** `especificacao.md` v1.0, `plano.md` e `constituicao.md`
+**Base:** `especificacao.md` v1.2, `plano.md` e `constituicao.md`
 **Papéis:** a IA sugeriu a quebra e a ordem; a equipe revisou e aprovou.
 
 > **Nota de método.** Como o sistema foi construído antes de a especificação ser formalizada (ver `especificacao.md`), esta decomposição foi feita a partir do código já implementado. Cada tarefa corresponde a uma parte real do `index.html` e está ligada aos requisitos (RF), aos critérios de aceitação (CA) e aos princípios (P) que atende. O resultado de cada critério fica em `validacao.md`.

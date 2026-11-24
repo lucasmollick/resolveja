@@ -1,6 +1,6 @@
 # Especificação — ResolveJá · Central de Atendimento (SPT)
 
-**Versão:** 1.0
+**Versão:** 1.2
 **Sistema especificado:** `index.html`, publicado em https://lucasmollick.github.io/resolveja/
 **Equipe:** Guilherme Amorim, João Víctor Henrique e Lucas Freitas Mollick
 **Status:** aprovada pela equipe em 24/11/2026
@@ -199,7 +199,7 @@ Padrões usados: **Ubíquo** ("O sistema deve…"), **Por evento** ("Quando…")
 
 ### Entrada do cliente
 
-**CA-01** (RF-01) — **Dado** que os dados foram restaurados (2 pessoas na fila), **quando** o cliente preenche o formulário completo e envia, **então** o sistema mostra o protocolo **F-0008**, informa que ele é o **3º da fila** e exibe um tempo estimado de retorno.
+**CA-01** (RF-01) — **Dado** que os dados foram restaurados (2 pessoas na fila), **quando** o cliente preenche o formulário completo e envia, **então** o sistema mostra o protocolo **F-0009**, informa que ele é o **3º da fila** e exibe um tempo estimado de retorno.
 
 **CA-02** (RF-01-E) — **Dado** o formulário em branco, **quando** o cliente clica em "Entrar na fila de atendimento", **então** o sistema lista os erros (nome, telefone, bairro, endereço, descrição, autorização) e nenhum protocolo é gerado.
 
@@ -239,7 +239,7 @@ Padrões usados: **Ubíquo** ("O sistema deve…"), **Por evento** ("Quando…")
 
 **CA-18** (RF-11) — **Dado** o pedido criado no CA-14, **quando** o atendente abre o pedido, **então** o histórico mostra os eventos em ordem cronológica, cada um marcado como Entrada, Processamento ou Saída, incluindo "Valor calculado: … = R$ 156,75" e "Pagamento simulado aprovado via Pix".
 
-**CA-19** (RF-12) — **Dado** o pedido do CA-14, **quando** o atendente clica em "Enviar por WhatsApp" na confirmação ao cliente, **então** o WhatsApp abre com o texto contendo o código, o profissional, a data e **R$ 156,75**, e a caixa passa a mostrar "Enviado 1×".
+**CA-19** (RF-12) — **Dado** o pedido do CA-14, **quando** o atendente abre o pedido, **então** a caixa "Avisar o cliente: confirmação" mostra o texto com o código, o profissional, a data e **R$ 156,75**. **E quando** ele clica em "Enviar por WhatsApp", **então** o sistema abre o WhatsApp para o telefone do cliente e a caixa passa a mostrar "Enviado 1×". (Para ver a mensagem dentro do WhatsApp, o cliente de teste deve ter o telefone real de um integrante; com número fictício, o WhatsApp informa que o número não existe.)
 
 **CA-20** (RF-13) — **Dado** o pedido do CA-14 com a ordem enviada a Carlos Mendes, **quando** se entra na área do Profissional como Carlos (demonstração) e se clica em aceitar, **então** a central mostra "Profissional confirmou" no pedido e a consulta do cliente marca a etapa "✓ Profissional confirmou".
 
@@ -273,7 +273,7 @@ Padrões usados: **Ubíquo** ("O sistema deve…"), **Por evento** ("Quando…")
 
 **CA-33** (RF-22) — **Dado** o painel do CA-32, **quando** a central conclui o RJ-001022 (CA-23), **então** o painel passa a mostrar **9** concluídos, **2** em andamento e faturamento **R$ 1.937,67**.
 
-**CA-34** (RF-23) — **Dado** que os dados foram restaurados há mais de 10 minutos e ninguém atendeu a fila, **quando** o gerente abre o monitoramento, **então** aparece o alerta de que **Paulo Roberto (F-0006)** espera há mais de 15 minutos. **E quando** todos os encanadores são marcados como indisponíveis, **então** aparece o alerta "Nenhum encanador disponível".
+**CA-34** (RF-23) — **Dado** que os dados foram restaurados há mais de 10 minutos e ninguém atendeu a fila, **quando** o gerente abre o monitoramento, **então** aparece o alerta de que **Paulo Roberto (F-0007)** espera há mais de 15 minutos. **E quando** todos os encanadores são marcados como indisponíveis, **então** aparece o alerta "Nenhum encanador disponível".
 
 **CA-35** (RF-24) — **Dado** um pedido criado (ex.: CA-14), **quando** a página é recarregada (F5) no mesmo navegador, **então** o pedido continua na lista com a mesma situação.
 
@@ -327,6 +327,8 @@ A ligação com as tarefas (T-XX) fica em `tarefas.md`, e o resultado de cada cr
 |---|---|
 | 17/11/2026 | A equipe definiu em consenso como o trabalho seria conduzido, em reunião sem uso de IA. |
 | 24/11/2026 | Especificação redigida com apoio de IA a partir do sistema publicado, revisada e aprovada pela equipe. O caso real da seção 1.2 foi fornecido pela equipe. |
+| 24/11/2026 | **v1.1** — Na validação, a equipe observou o protocolo F-0009 no CA-01, e não o F-0008 esperado. A investigação mostrou erro na especificação: os dados de exemplo já têm 8 itens de fila, e não 7. CA-01 corrigido para F-0009 e CA-34 corrigido para F-0007 (Paulo Roberto). O sistema não foi alterado. |
+| 24/11/2026 | **v1.2** — Na validação, o CA-19 falhou: o cliente de teste tinha telefone fictício e o WhatsApp informou que o número não existe, sem mostrar a mensagem. A equipe aprovou reescrever o CA-19 para conferir o texto na caixa "Avisar o cliente" e o contador "Enviado 1×", com orientação de usar telefone real quando for preciso ver a mensagem no WhatsApp. O sistema não foi alterado. |
 
 ## 11. Aprovação
 

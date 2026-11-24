@@ -1,7 +1,7 @@
 # Plano técnico — ResolveJá · Central de Atendimento (SPT)
 
 **Equipe:** Guilherme Amorim, João Víctor Henrique e Lucas Freitas Mollick
-**Base:** `especificacao.md` v1.0 e `constituicao.md`
+**Base:** `especificacao.md` v1.2 e `constituicao.md`
 **Papéis:** a IA propôs as decisões abaixo a partir da especificação; a equipe revisou e aprovou.
 
 ---
