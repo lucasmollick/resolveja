@@ -4,7 +4,7 @@
 **Sistema validado:** https://lucasmollick.github.io/resolveja/
 **Base:** critérios de aceitação da `especificacao.md` v1.2
 
-> **Declaração.** A validação foi feita manualmente pela equipe, no sistema publicado, **sem apoio de IA**. Cada critério foi executado por uma pessoa da equipe, que conferiu o resultado na tela. Os prints estão em `evidencias/`; onde não há print, a conferência visual está anotada na coluna Observação. A IA preparou a matriz em branco e transcreveu para ela os resultados informados pela equipe, conferindo os prints enviados.
+> **Declaração.** A validação foi feita manualmente pela equipe, **sem apoio de IA** (ambiente de cada sessão indicado abaixo). Cada critério foi executado por uma pessoa da equipe, que conferiu o resultado na tela. Os prints estão em `evidencias/`; onde não há print, a conferência visual está anotada na coluna Observação. A IA preparou a matriz em branco e transcreveu para ela os resultados informados pela equipe, conferindo os prints enviados.
 
 > **Ambiente.** A Sessão A foi executada em 24/11/2026 na cópia local do mesmo `index.html` publicado (aberto a partir do computador), e não no endereço do GitHub Pages. O código é idêntico; as demais sessões devem ser feitas no endereço publicado.
 
